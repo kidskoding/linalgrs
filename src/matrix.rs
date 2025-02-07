@@ -1,13 +1,25 @@
+/// A struct representing that of a `Matrix` in linear algebra
+///
+/// In Linear Algebra, a `Matrix` is a rectangular array of numbers,
+/// symbols, or expressions, arranged in rows and columns. Matrices are
+/// used to represent and solve systems of linear equations, perform
+/// linear transformations, and more
 pub struct Matrix<'a> {
+    /// `mat` represents a vector of `&[i64]` slices, 
+    /// where each slice represents a row in the matrix
     pub mat: Vec<&'a [i64]>,
+    
+    /// `rows` stores the number of rows in the matrix
     pub rows: usize,
+    
+    /// `cols` stores the number of columns in the matrix
     pub cols: usize,
 }
 
 impl Matrix<'static> {
     /// Creates a new instance of this `Matrix`
     /// 
-    /// # Returns
+    /// ### Returns
     /// - A newly constructed `Matrix` object
     pub fn new() -> Matrix<'static> {
         Matrix {
@@ -19,10 +31,10 @@ impl Matrix<'static> {
     
     /// Appends an array to this `Matrix`
     ///
-    /// # Parameters
+    /// ### Parameters
     /// - arr: A `&[i64]` slice
     /// 
-    /// # Returns
+    /// ### Returns
     /// - An updated `Matrix` object that adds `arr` to the `mat` `Vec`
     pub fn append<'a, 'b>(mut matrix: Matrix<'b>, arr: &'b [i64]) -> Matrix<'b> {
         matrix.mat.push(arr);
@@ -34,7 +46,7 @@ impl Matrix<'static> {
     
     /// Compute the shape of this `Matrix`
     /// 
-    /// # Returns
+    /// ### Returns
     /// - A tuple of two positive integers - `(usize, usize)` - representing
     /// the rows and columns of the matrix
     pub fn shape(&mut self) -> (usize, usize) {
@@ -48,9 +60,9 @@ impl Matrix<'static> {
         (self.rows, self.cols)
     }
     
-    /// Compute the determinant of this Matrix
+    /// Compute the determinant of this `Matrix`
     /// 
-    /// # Returns
+    /// ### Returns
     /// - A `Result` object determining whether the determinant could be calculated
     ///     - `Err(&str)` - if the `Matrix`'s shape is invalid
     ///     - `Ok(i64)` - if this `Matrix`'s shape is a `(2, 2)`

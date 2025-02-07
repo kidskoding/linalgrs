@@ -31,4 +31,14 @@ mod tests {
         
         assert_eq!(mat.determinant().unwrap(), -2);
     }
+    
+    #[test]
+    fn test_determinant_err() {
+        let mut mat = Matrix::new();
+        let top = &[1, 2, 3];
+        
+        mat = Matrix::append(mat, top);
+        
+        assert_eq!(mat.determinant().is_err(), true);
+    }
 }
