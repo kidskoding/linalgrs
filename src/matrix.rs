@@ -5,6 +5,10 @@ pub struct Matrix<'a> {
 }
 
 impl Matrix<'static> {
+    /// Creates a new instance of this `Matrix`
+    /// 
+    /// # Returns
+    /// - A newly constructed `Matrix` object
     pub fn new() -> Matrix<'static> {
         Matrix {
             mat: Vec::new(),
@@ -16,7 +20,10 @@ impl Matrix<'static> {
     /// Appends an array to this `Matrix`
     ///
     /// # Parameters
-    /// - arr: A reference counted - `Rc` - `[i64]` array
+    /// - arr: A `&[i64]` slice
+    /// 
+    /// # Returns
+    /// - An updated `Matrix` object that adds `arr` to the `mat` `Vec`
     pub fn append<'a, 'b>(mut matrix: Matrix<'b>, arr: &'b [i64]) -> Matrix<'b> {
         matrix.mat.push(arr);
         matrix.rows = matrix.mat.len();
@@ -44,9 +51,9 @@ impl Matrix<'static> {
     /// Compute the determinant of this Matrix
     /// 
     /// # Returns
-    /// - A `Result` object determining whether or not the determinant could be calculated
-    ///     - `Err(&str)` - if the `Matrix`s shape is invalid
-    ///     - `Ok(i64)` - if this `Matrix`s shape is a `(2, 2)`
+    /// - A `Result` object determining whether the determinant could be calculated
+    ///     - `Err(&str)` - if the `Matrix`'s shape is invalid
+    ///     - `Ok(i64)` - if this `Matrix`'s shape is a `(2, 2)`
     pub fn determinant(&mut self) -> Result<i64, &str> {
         if self.shape() == (2, 2) {
             let first = 0;
