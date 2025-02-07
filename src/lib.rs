@@ -1,14 +1,34 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+pub mod matrix;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::matrix::Matrix;
 
     #[test]
-    fn test_add() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    fn test_matrix() {
+        let mut mat = Matrix::new();
+        let arr = &[1, 2, 3];
+        mat = Matrix::append(mat, arr);
+        assert_eq!(mat.mat, vec![arr]);
+    }
+    
+    #[test]
+    fn test_shape() {
+        let mut mat = Matrix::new();
+        let arr = &[1, 2, 3];
+        mat = Matrix::append(mat, arr);
+        assert_eq!(mat.shape(), (1, 3))
+    }
+    
+    #[test]
+    fn test_determinant() {
+        let mut mat = Matrix::new();
+        let top = &[1, 2];
+        let bottom = &[3, 4];
+        
+        mat = Matrix::append(mat, top);
+        mat = Matrix::append(mat, bottom);
+        
+        assert_eq!(mat.determinant().unwrap(), -2);
     }
 }
