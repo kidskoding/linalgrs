@@ -1,47 +1,39 @@
+use std::ops::Range;
+use std::sync::Arc;
+
 /// A struct representing that of a `Matrix` in linear algebra
+/// 
+/// Contains a computational representation of a `Matrix`, along with
+/// core matrix operations, such as shape and determinant
 ///
 /// In Linear Algebra, a `Matrix` is a rectangular array of numbers,
-/// symbols, or expressions, arranged in rows and columns. Matrices are
-/// used to represent and solve systems of linear equations, perform
+/// symbols, or expressions, arranged in rows and columns
+/// 
+/// Matrices are used to represent and solve systems of linear equations, perform
 /// linear transformations, and more
-pub struct Matrix<'a> {
-    /// `mat` represents a vector of `&[i64]` slices, 
-    /// where each slice represents a row in the matrix
-    pub mat: Vec<&'a [i64]>,
+pub struct Matrix {
+    /// Represents a vector of `Arc` atomic reference counted `[i64]` arrays, 
+    /// where each represents a row in the matrix
+    pub mat: Vec<Arc<[i64]>>,
     
-    /// `rows` stores the number of rows in the matrix
+    /// Stores the number of rows in the matrix
     pub rows: usize,
     
-    /// `cols` stores the number of columns in the matrix
+    /// Stores the number of columns in the matrix
     pub cols: usize,
 }
 
-impl Matrix<'static> {
+impl Matrix {
     /// Creates a new instance of this `Matrix`
     /// 
     /// ### Returns
     /// - A newly constructed `Matrix` object
-    pub fn new() -> Matrix<'static> {
+    pub fn new() -> Matrix {
         Matrix {
             mat: Vec::new(),
             rows: 0,
             cols: 0,
         }
-    }
-    
-    /// Appends an array to this `Matrix`
-    ///
-    /// ### Parameters
-    /// - arr: A `&[i64]` slice
-    /// 
-    /// ### Returns
-    /// - An updated `Matrix` object that adds `arr` to the `mat` `Vec`
-    pub fn append<'a, 'b>(mut matrix: Matrix<'b>, arr: &'b [i64]) -> Matrix<'b> {
-        matrix.mat.push(arr);
-        matrix.rows = matrix.mat.len();
-        matrix.cols = arr.len();
-        
-        matrix
     }
     
     /// Compute the shape of this `Matrix`
@@ -60,13 +52,18 @@ impl Matrix<'static> {
         (self.rows, self.cols)
     }
     
-    /// Compute the determinant of this `Matrix`
+    /// Compute the determinant of this `Matrix`. 
+    /// 
+    /// In a `Matrix` with a shape of
+    /// `(2, 2)`, a `Matrix`'s determinant is equal to `ad - bc`, which is the difference
+    /// between the left diagonal product and the right diagonal product
     /// 
     /// ### Returns
-    /// - A `Result` object determining whether the determinant could be calculated
-    ///     - `Err(&str)` - if the `Matrix`'s shape is invalid
-    ///     - `Ok(i64)` - if this `Matrix`'s shape is a `(2, 2)`
-    pub fn determinant(&mut self) -> Result<i64, &str> {
+    /// - A `Result` determining whether the determinant could be calculated
+    ///     - An `Err` if the `Matrix`'s shape could not be calculated 
+    ///     - An `Ok` with the determinant value, if this `Matrix`'s 
+    ///     shape is `(2, 2)` - 2 rows and 2 columns
+    pub fn determinant(&mut self) -> Result<i64, String> {
         if self.shape() == (2, 2) {
             let first = 0;
             let last = self.mat.len() - 1;
@@ -77,6 +74,44 @@ impl Matrix<'static> {
             return Ok(ad - bc);
         }
         
-        Err("Unable to compute determinant. The shape must be (2, 2)")
+        Err("Unable to compute determinant. The shape must be (2, 2)"
+            .to_string())
+    }
+
+
+    /// Get a sub-matrix of this `Matrix`
+    ///
+    /// ### Parameters
+    /// - `row_range` - A `Range<usize>` indicating the range of 
+    /// rows to extract from this `Matrix`
+    /// - `col_range` - A `Range<usize>` indicating the range of
+    /// columns to extract from this `Matrix`
+    ///
+    /// ### Returns
+    /// - A `Result` containing whether this `Matrix` could be extracted 
+    /// into a sub-matrix or not
+    ///     - An `Ok` with the new sub-matrix
+    ///     - An `Err` with a custom `String` error message if either or
+    ///     both provided ranges were out of bounds
+    pub fn sub_matrix(
+        &mut self,
+        row_range: Range<usize>,
+        col_range: Range<usize>
+    ) -> Result<Matrix, String> {
+        if &row_range.end > &self.rows || &col_range.end > &self.cols {
+            return Err("Range out of bounds!".to_string());
+        }
+
+        let mut new_mat = Vec::new();
+        for i in row_range.clone() {
+            let new_row: Arc<[i64]> = Arc::from(&self.mat[i][col_range.clone()]);
+            new_mat.push(new_row);
+        }
+
+        Ok(Matrix {
+            mat: new_mat,
+            rows: row_range.len(),
+            cols: col_range.len()
+        })
     }
 }
