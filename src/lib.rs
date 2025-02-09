@@ -1,6 +1,6 @@
 pub mod matrix;
 pub mod system;
-mod matrix_utilities;
+pub mod matrix_utilities;
 
 #[cfg(test)]
 mod tests {
