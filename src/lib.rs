@@ -1,6 +1,7 @@
 pub mod matrix;
 pub mod system;
 pub mod matrix_utilities;
+mod number;
 
 #[cfg(test)]
 mod tests {
@@ -21,8 +22,8 @@ mod tests {
         #[test]
         fn test_shape() {
             let mut mat = Matrix::new();
-            let arr = &[1, 2, 3];
-            mat = MatrixUtilities::append(mat, arr);
+            let arr = [1, 2, 3];
+            mat = MatrixUtilities::append(mat, &arr);
             assert_eq!(mat.shape(), (1, 3))
         }
         #[test]

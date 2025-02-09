@@ -1,5 +1,6 @@
 use std::ops::Range;
 use std::sync::Arc;
+use crate::number::Number;
 
 /// A struct representing that of a `Matrix` in linear algebra
 /// 
@@ -11,10 +12,10 @@ use std::sync::Arc;
 /// 
 /// Matrices are used to represent and solve systems of linear equations, perform
 /// linear transformations, and more
-pub struct Matrix {
+pub struct Matrix<T: Number> {
     /// Represents a vector of `Arc` atomic reference counted `[i64]` arrays, 
     /// where each represents a row in the matrix
-    pub mat: Vec<Arc<[i64]>>,
+    pub mat: Vec<Arc<[T]>>,
     
     /// Stores the number of rows in the matrix
     pub rows: usize,
@@ -23,12 +24,12 @@ pub struct Matrix {
     pub cols: usize,
 }
 
-impl Matrix {
+impl<T: Number> Matrix<T> {
     /// Creates a new instance of this `Matrix`
     /// 
     /// ### Returns
     /// - A newly constructed `Matrix` object
-    pub fn new() -> Matrix {
+    pub fn new() -> Matrix<T> {
         Matrix {
             mat: Vec::new(),
             rows: 0,
@@ -63,7 +64,7 @@ impl Matrix {
     ///     - An `Err` if the `Matrix`'s shape could not be calculated 
     ///     - An `Ok` with the determinant value, if this `Matrix`'s 
     ///     shape is `(2, 2)` - 2 rows and 2 columns
-    pub fn determinant(&mut self) -> Result<i64, String> {
+    pub fn determinant(&mut self) -> Result<T, String> {
         if self.shape() == (2, 2) {
             let first = 0;
             let last = self.mat.len() - 1;
@@ -97,14 +98,14 @@ impl Matrix {
         &mut self,
         row_range: Range<usize>,
         col_range: Range<usize>
-    ) -> Result<Matrix, String> {
+    ) -> Result<Matrix<T>, String> {
         if &row_range.end > &self.rows || &col_range.end > &self.cols {
             return Err("Range out of bounds!".to_string());
         }
 
         let mut new_mat = Vec::new();
         for i in row_range.clone() {
-            let new_row: Arc<[i64]> = Arc::from(&self.mat[i][col_range.clone()]);
+            let new_row: Arc<[T]> = Arc::from(&self.mat[i][col_range.clone()]);
             new_mat.push(new_row);
         }
 

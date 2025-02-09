@@ -1,20 +1,25 @@
+use std::marker::PhantomData;
+use std::ops::MulAssign;
 use std::sync::Arc;
 use crate::matrix::Matrix;
+use crate::number::Number;
 
-pub struct MatrixUtilities;
+pub struct MatrixUtilities<T: Number + MulAssign + Clone> {
+    _marker: PhantomData<T>,
+}
 
-impl MatrixUtilities {
+impl<T: MulAssign + Clone + Number> MatrixUtilities<T> {
     /// Appends a row to a given `Matrix`
     ///
     ///
     /// ### Parameters
-    /// - `matrix` - The `Matrix` needed to add an additional row
+    /// - `matrix` - The `Matrix` needed to add a row
     /// - `row`: A `&[i64]` slice
     ///
     /// ### Returns
     /// - An updated `Matrix` object that adds the given `row` 
     /// to the given `Matrix`
-    pub fn append(mut matrix: Matrix, row: &[i64]) -> Matrix {
+    pub fn append(mut matrix: Matrix<T>, row: &[T]) -> Matrix<T> {
         matrix.mat.push(Arc::from(row));
         matrix.rows = matrix.mat.len();
         matrix.cols = row.len();
@@ -31,7 +36,7 @@ impl MatrixUtilities {
     /// ### Returns
     /// - An updated `Matrix` object that adds all arrays to this
     /// `Matrix`
-    pub fn append_multiple(mut matrix: Matrix, rows: &[&[i64]]) -> Matrix {
+    pub fn append_multiple(mut matrix: Matrix<T>, rows: &[&[T]]) -> Matrix<T> {
         for &row in rows {
             matrix.mat.push(Arc::from(row));
         }
@@ -53,10 +58,10 @@ impl MatrixUtilities {
     /// ### Returns
     /// - A new `Matrix` that contains the matrix after multiplying
     /// by a scalar constant
-    pub fn multiply_by_scalar(mut matrix: Matrix, constant: i64) -> Matrix {
+    pub fn multiply_by_scalar(mut matrix: Matrix<T>, constant: T) -> Matrix<T> {
         for row in &mut matrix.mat {
             for elem in Arc::make_mut(row) {
-                *elem *= constant;
+                *elem *= constant.clone();
             }
         }
         
