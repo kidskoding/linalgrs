@@ -53,7 +53,13 @@ impl MatrixUtilities {
     /// ### Returns
     /// - A new `Matrix` that contains the matrix after multiplying
     /// by a scalar constant
-    pub fn multiply_by_scalar(matrix: &mut Matrix, constant: i64) -> Matrix {
-        todo!()
+    pub fn multiply_by_scalar(mut matrix: Matrix, constant: i64) -> Matrix {
+        for row in &mut matrix.mat {
+            for elem in Arc::make_mut(row) {
+                *elem *= constant;
+            }
+        }
+        
+        matrix
     }
 }

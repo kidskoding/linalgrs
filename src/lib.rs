@@ -25,9 +25,13 @@ mod tests {
             mat = MatrixUtilities::append(mat, arr);
             assert_eq!(mat.shape(), (1, 3))
         }
-        // #[test]
+        #[test]
         fn test_multiply_by_scalar() {
-            todo!()
+            let mat = Matrix::new();
+            let arr: &[&[i64]] = &[&[1, 2, 3], &[4, 5, 6]];
+            let mat = MatrixUtilities::append_multiple(mat, arr);
+            let mat = MatrixUtilities::multiply_by_scalar(mat, 2);
+            assert_eq!(mat.mat, vec![Arc::from(&[2, 4, 6][..]), Arc::from(&[8, 10, 12][..])])
         }
         #[test]
         fn test_sub_matrix() {
