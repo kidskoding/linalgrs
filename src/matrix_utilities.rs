@@ -48,6 +48,71 @@ impl<T: MulAssign + Clone + Number> MatrixUtilities<T> {
         matrix
     }
 
+    /// Adds two `Matrix` instances together and returns a new `Matrix` representing
+    /// their sum
+    ///
+    /// ### Parameters
+    /// - `a`: One `Matrix` operand addend
+    /// - 'b': Another 'Matrix' operand addend
+    ///
+    /// ### Returns
+    /// - An updated `Matrix` instance that represents the sum
+    ///   of two matrices `a` and `b`
+    pub fn add(mut a: Matrix<T>, mut b: Matrix<T>) -> Result<Matrix<T>, String> {
+        if a.shape() != b.shape() {
+            return Err("Cannot add the two matrices because 
+                their shapes are unequal!".to_string())
+        }
+       
+        let mut result = Vec::new();
+
+        for r in 0..a.rows {
+            let mut new_row = Vec::new();
+            for c in 0..a.cols {
+                new_row.push(a.mat[r][c] + b.mat[r][c]);
+            }
+            result.push(Arc::from(new_row.as_slice()));
+        }
+
+        Ok(Matrix {
+            mat: result,
+            rows: a.rows,
+            cols: a.cols,
+        })
+    }
+
+    /// Subtracts two `Matrix` instances together and returns a new `Matrix` representing
+    /// their difference
+    ///
+    /// ### Parameters
+    /// - `a`: A `Matrix` instance that will be one of the operands
+    /// - 'b': Another 'Matrix' instance that will be the second operand to subtract from
+    ///
+    /// ### Returns
+    /// - An updated `Matrix` instance that represents the sum
+    ///   of two matrices `a` and `b`
+    pub fn subtract(mut a: Matrix<T>, mut b: Matrix<T>) -> Result<Matrix<T>, String> {
+        if a.shape() != b.shape() {
+            return Err("Cannot add the two matrices because 
+                their shapes are unequal!".to_string())
+        }
+       
+        let mut result = Vec::new();
+
+        for r in 0..a.rows {
+            let mut new_row = Vec::new();
+            for c in 0..a.cols {
+                new_row.push(a.mat[r][c] - b.mat[r][c]);
+            }
+            result.push(Arc::from(new_row.as_slice()));
+        }
+
+        Ok(Matrix {
+            mat: result,
+            rows: a.rows,
+            cols: a.cols,
+        })
+    }
 
     /// Multiplies a given `Matrix` by a given scalar `constant`
     ///

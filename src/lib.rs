@@ -26,6 +26,38 @@ mod tests {
             assert_eq!(mat.shape(), (1, 3))
         }
         #[test]
+        fn test_add_matrix() {
+            let mat = Matrix::default();
+            let arr: &[&[i64]] = &[&[1, 2, 3], &[4, 5, 6]];
+            let mat = MatrixUtilities::append_multiple(mat, arr);
+            
+            let result = MatrixUtilities::add(mat.clone(), mat.clone());
+            assert_eq!(result.unwrap().mat, vec![Arc::from([2, 4, 6]), Arc::from([8, 10, 12])])
+        }
+        #[test]
+        fn test_add_matrix_different_shape() {
+            let mat = Matrix::default();
+
+            let arr: &[&[i64]] = &[&[1, 2, 3], &[4, 5, 6]];
+            let mat = MatrixUtilities::append_multiple(mat, arr);
+        
+            let mat2 = Matrix::default();
+            let arr2: &[&[i64]] = &[&[1, 2], &[3, 4]];
+            let mat2 = MatrixUtilities::append_multiple(mat2, arr2);
+
+            let result = MatrixUtilities::add(mat, mat2);
+            assert!(result.is_err());
+        }
+        #[test]
+        fn test_subtract_matrix() {
+            let mat = Matrix::default();
+            let arr: &[&[i64]] = &[&[1, 2, 3], &[4, 5, 6]];
+            let mat = MatrixUtilities::append_multiple(mat, arr);
+            
+            let result = MatrixUtilities::subtract(mat.clone(), mat.clone());
+            assert_eq!(result.unwrap().mat, vec![Arc::from([0, 0, 0]), Arc::from([0, 0, 0])])
+        }
+        #[test]
         fn test_multiply_by_scalar() {
             let mat = Matrix::default();
             let arr: &[&[i64]] = &[&[1, 2, 3], &[4, 5, 6]];
