@@ -73,5 +73,36 @@ mod tests {
                 assert_eq!(mat.determinant().is_err(), true);
             }
         }
+        mod gaussian_test {
+            use std::sync::Arc;
+            use crate::matrix::Matrix;
+            use crate::system::System;
+
+            #[test]
+            fn test_gaussian_elimination() {
+                let coefficients = Matrix {
+                    rows: 3,
+                    cols: 3,
+                    mat: vec![
+                        Arc::from([2.0, 1.0, -1.0]),
+                        Arc::new([-3.0, -1.0, 2.0]),
+                        Arc::new([-2.0, 1.0, 2.0]),
+                    ],
+                };
+                let constants = vec![8.0, -11.0, -3.0];
+                let mut system = System {
+                    coefficients,
+                    variables: vec![],
+                    constants,
+                };
+
+                let result = System::gaussian_elimination(&mut system);
+
+                assert!(result.is_ok());
+                let solution = result.unwrap();
+                let expected_solution = vec![2.0, 3.0, -1.0];
+                assert_eq!(solution, expected_solution);
+            } 
+        }
     }
 }
