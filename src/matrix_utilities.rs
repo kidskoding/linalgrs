@@ -18,7 +18,7 @@ impl<T: MulAssign + Clone + Number> MatrixUtilities<T> {
     ///
     /// ### Returns
     /// - An updated `Matrix` object that adds the given `row` 
-    /// to the given `Matrix`
+    ///   to the given `Matrix`
     pub fn append(mut matrix: Matrix<T>, row: &[T]) -> Matrix<T> {
         matrix.mat.push(Arc::from(row));
         matrix.rows = matrix.mat.len();
@@ -35,7 +35,7 @@ impl<T: MulAssign + Clone + Number> MatrixUtilities<T> {
     ///
     /// ### Returns
     /// - An updated `Matrix` object that adds all arrays to this
-    /// `Matrix`
+    ///   `Matrix`
     pub fn append_multiple(mut matrix: Matrix<T>, rows: &[&[T]]) -> Matrix<T> {
         for &row in rows {
             matrix.mat.push(Arc::from(row));
@@ -57,11 +57,11 @@ impl<T: MulAssign + Clone + Number> MatrixUtilities<T> {
     ///
     /// ### Returns
     /// - A new `Matrix` that contains the matrix after multiplying
-    /// by a scalar constant
+    ///   by a scalar constant
     pub fn multiply_by_scalar(mut matrix: Matrix<T>, constant: T) -> Matrix<T> {
         for row in &mut matrix.mat {
             for elem in Arc::make_mut(row) {
-                *elem *= constant.clone();
+                *elem *= constant;
             }
         }
         

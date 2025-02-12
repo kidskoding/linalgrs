@@ -25,24 +25,26 @@ pub struct Matrix<T: Number + Clone> {
     pub cols: usize,
 }
 
-impl<T: Number> Matrix<T> {
+impl<T: Number> Default for Matrix<T> {
     /// Creates a new instance of this `Matrix`
     /// 
     /// ### Returns
     /// - A newly constructed `Matrix` object
-    pub fn new() -> Matrix<T> {
+    fn default() -> Self {
         Matrix {
-            mat: Vec::new(),
+            mat: vec![],
             rows: 0,
-            cols: 0,
+            cols: 0
         }
     }
-    
+}
+
+impl<T: Number> Matrix<T> {
     /// Compute the shape of this `Matrix`
     /// 
     /// ### Returns
     /// - A tuple of two positive integers - `(usize, usize)` - representing
-    /// the rows and columns of the matrix
+    ///   the rows and columns of the matrix
     pub fn shape(&mut self) -> (usize, usize) {
         self.rows = self.mat.len();
         self.cols = if self.rows > 0 {
@@ -64,7 +66,7 @@ impl<T: Number> Matrix<T> {
     /// - A `Result` determining whether the determinant could be calculated
     ///     - An `Err` if the `Matrix`'s shape could not be calculated 
     ///     - An `Ok` with the determinant value, if this `Matrix`'s 
-    ///     shape is `(2, 2)` - 2 rows and 2 columns
+    ///       shape is `(2, 2)` - 2 rows and 2 columns
     pub fn determinant(&mut self) -> Result<T, String> {
         if self.shape() == (2, 2) {
             let first = 0;
@@ -85,22 +87,22 @@ impl<T: Number> Matrix<T> {
     ///
     /// ### Parameters
     /// - `row_range` - A `Range<usize>` indicating the range of 
-    /// rows to extract from this `Matrix`
+    ///    rows to extract from this `Matrix`
     /// - `col_range` - A `Range<usize>` indicating the range of
-    /// columns to extract from this `Matrix`
+    ///    columns to extract from this `Matrix`
     ///
     /// ### Returns
     /// - A `Result` containing whether this `Matrix` could be extracted 
-    /// into a sub-matrix or not
+    ///   into a sub-matrix or not
     ///     - An `Ok` with the new sub-matrix
     ///     - An `Err` with a custom `String` error message if either or
-    ///     both provided ranges were out of bounds
+    ///       both provided ranges were out of bounds
     pub fn sub_matrix(
         &mut self,
         row_range: Range<usize>,
         col_range: Range<usize>
     ) -> Result<Matrix<T>, String> {
-        if &row_range.end > &self.rows || &col_range.end > &self.cols {
+        if row_range.end > self.rows || col_range.end > self.cols {
             return Err("Range out of bounds!".to_string());
         }
 

@@ -9,6 +9,7 @@
   - [x] 1.6 - Create a function that multiplies a matrix by 
   - a scalar constant value
   - [ ] 1.7 - Code dot/cross product for a matrix
+
 2. **Systems of Linear Equations**
   - [ ] 2.1 - Create a `System` class that 
 represents a systems of equations
