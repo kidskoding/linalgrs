@@ -1,5 +1,4 @@
 use std::ops::{AddAssign, Div, DivAssign, Mul, SubAssign};
-use std::sync::Arc;
 use crate::matrix::Matrix;
 use crate::number::Number;
 
@@ -16,7 +15,7 @@ impl<T: Number
     + Clone + Default 
     + SubAssign + DivAssign + Div<Output = T>
     + AddAssign + PartialOrd> System<T> {
-    pub fn gaussian_elimination(system: &mut System<T>) -> Result<Vec<T>, String> {
+    /* pub fn gaussian_elimination(system: &mut System<T>) -> Result<Vec<T>, String> {
         let n = system.coefficients.rows;
         if n != system.coefficients.rows || system.coefficients.cols != 1 {
             return Err("The number of rows in this coefficient matrix must equal \
@@ -60,5 +59,5 @@ impl<T: Number
         }
 
         Ok(solution)
-    }
+    } */
 }

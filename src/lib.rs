@@ -9,7 +9,6 @@ mod tests {
         use std::sync::Arc;
         use crate::matrix::Matrix;
         use crate::matrix_utilities::MatrixUtilities;
-
         #[test]
         fn test_matrix() {
             let mut mat = Matrix::new();
@@ -74,11 +73,11 @@ mod tests {
             }
         }
         mod gaussian_test {
-            use std::sync::Arc;
+            /* use std::sync::Arc;
             use crate::matrix::Matrix;
-            use crate::system::System;
+            use crate::system::System; */
 
-            #[test]
+            /* #[test]
             fn test_gaussian_elimination() {
                 let coefficients = Matrix {
                     rows: 3,
@@ -102,7 +101,7 @@ mod tests {
                 let solution = result.unwrap();
                 let expected_solution = vec![2.0, 3.0, -1.0];
                 assert_eq!(solution, expected_solution);
-            } 
+            } */
         }
     }
 }
