@@ -81,6 +81,19 @@ mod tests {
                 Arc::from([42, -18, 2, 40])])
         }
         #[test]
+        fn test_multiply_matrix_error() {
+            let mat = Matrix::default();
+            let arr: &[&[i64]] = &[&[1, 4], &[3, 5]];
+            let mat = MatrixUtilities::append_multiple(mat, arr);
+            
+            let mat2 = Matrix::default();
+            let arr2: &[&[i64]] = &[&[5, 2], &[3, 6], &[3, 4]];
+            let mat2 = MatrixUtilities::append_multiple(mat2, arr2);
+
+            let result = MatrixUtilities::multiply(mat, mat2);
+            assert!(result.is_err());
+        }
+        #[test]
         fn test_sub_matrix() {
             let mut mat = Matrix::default();
             let arr: &[&[i64]] = &[&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
@@ -94,6 +107,33 @@ mod tests {
             let expected: Vec<Arc<[i64]>> 
                 = vec![Arc::from(&[1, 2][..]), Arc::from(&[4, 5][..])];
             assert_eq!(sub_mat.mat, expected);
+        }
+        #[test]
+        fn test_dot_product() {
+            let mat = Matrix::default();
+            let arr: &[&[i64]] = &[&[1, 2, 3]];
+            let mat = MatrixUtilities::append_multiple(mat, arr);
+
+            let mat2 = Matrix::default();
+            let arr2: &[&[i64]] = &[&[1], &[2], &[3]];
+            let mat2 = MatrixUtilities::append_multiple(mat2, arr2);
+        
+            let result = MatrixUtilities::dot(mat, mat2);
+            assert!(result.is_ok());
+            assert_eq!(result.unwrap(), 14);
+        }
+        #[test]
+        fn test_dot_product_error() {
+            let mat = Matrix::default();
+            let arr: &[&[i64]] = &[&[1, 2, 3], &[4, 5, 6]];
+            let mat = MatrixUtilities::append_multiple(mat, arr);
+
+            let mat2 = Matrix::default();
+            let arr2: &[&[i64]] = &[&[1], &[2], &[3]];
+            let mat2 = MatrixUtilities::append_multiple(mat2, arr2);
+        
+            let result = MatrixUtilities::dot(mat, mat2);
+            assert!(result.is_err());
         }
 
         mod determinant_test {

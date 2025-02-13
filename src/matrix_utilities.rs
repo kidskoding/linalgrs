@@ -149,7 +149,7 @@ impl<T: MulAssign + AddAssign + Clone + Number + Default> MatrixUtilities<T> {
     ///
     /// ### Returns
     /// - A `Result` based on whether the two matrices were multiplied
-    ///     - An `Err` if the rows of `Matrix` a does not equal the columns of `Matrix` b
+    ///     - An `Err` if the columns of `Matrix` a does not equal the rows of `Matrix` b
     ///     - An `Ok` wrapped inside a `Matrix` object that represents the product between two
     ///       matrices
     pub fn multiply(a: Matrix<T>, b: Matrix<T>) -> Result<Matrix<T>, String> {    
@@ -176,5 +176,35 @@ impl<T: MulAssign + AddAssign + Clone + Number + Default> MatrixUtilities<T> {
             rows: new_mat.clone().len(),
             cols: new_mat[0].clone().len(),
         })
+    }
+
+    /// Gets the dot product of two matrices `a` and `b`
+    /// 
+    /// ### Parameters
+    /// - `a`: One of the `Matrix` instance operands
+    /// - `b`: Another `Matrix` instance operand
+    ///
+    /// ### Returns
+    /// - A `Result` based on whether there is a 
+    ///   valid dot product for matrices `a` and `b`
+    ///     - An `Err` value if the columns of `Matrix` a` do not equal the 
+    ///       rows of `Matrix` b`
+    ///     - An `Ok` wrapped in a T generic value, representing the 
+    ///       dot product
+    pub fn dot(a: Matrix<T>, b: Matrix<T>) -> Result<T, String> {
+        if a.cols != b.rows {
+            return Err("Cannot get the dot product: The number of columns in A must match the numbe                 r of rows in B.".to_string());
+        }
+        if !(a.rows == 1 && b.cols == 1) {
+            return Err("Dot product is only valid for a 
+                row vector and a column vector.".to_string());
+        }
+
+        let mut sum = T::default();
+        for i in 0..a.cols {
+            sum += a.mat[0][i] * b.mat[i][0];
+        }
+
+        Ok(sum)
     }
 }
