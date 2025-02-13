@@ -1,7 +1,9 @@
 use std::ops::{Add, Sub, Mul, MulAssign};
 
 /// A Number trait to restrict a `Matrix`'s `T` generic to only numeric types
-pub trait Number: Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self> + MulAssign + Copy {}
+pub trait Number: Add<Output = Self> 
+    + Sub<Output = Self> + Mul<Output = Self> 
+    + MulAssign + Copy {}
 
 impl Number for u8 {}
 impl Number for u16 {}

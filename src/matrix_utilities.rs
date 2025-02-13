@@ -1,14 +1,17 @@
 use std::marker::PhantomData;
-use std::ops::MulAssign;
+use std::ops::{MulAssign, AddAssign};
 use std::sync::Arc;
 use crate::matrix::Matrix;
 use crate::number::Number;
 
-pub struct MatrixUtilities<T: Number + MulAssign + Clone> {
+pub struct MatrixUtilities<T: Number
+        + MulAssign 
+        + Clone
+        + Default> {
     _marker: PhantomData<T>,
 }
 
-impl<T: MulAssign + Clone + Number> MatrixUtilities<T> {
+impl<T: MulAssign + AddAssign + Clone + Number + Default> MatrixUtilities<T> {
     /// Appends a row to a given `Matrix`
     ///
     ///
@@ -56,8 +59,10 @@ impl<T: MulAssign + Clone + Number> MatrixUtilities<T> {
     /// - 'b': Another 'Matrix' operand addend
     ///
     /// ### Returns
-    /// - An updated `Matrix` instance that represents the sum
-    ///   of two matrices `a` and `b`
+    /// - A `Result` based on whether the two matrices were added or not 
+    ///     - An `Err` if the two matrices are different shapes
+    ///     - An `Ok` wrapped inside a `Matrix` instance that represents the sum
+    ///       of the two matrices `a` and `b`
     pub fn add(mut a: Matrix<T>, mut b: Matrix<T>) -> Result<Matrix<T>, String> {
         if a.shape() != b.shape() {
             return Err("Cannot add the two matrices because 
@@ -89,8 +94,10 @@ impl<T: MulAssign + Clone + Number> MatrixUtilities<T> {
     /// - 'b': Another 'Matrix' instance that will be the second operand to subtract from
     ///
     /// ### Returns
-    /// - An updated `Matrix` instance that represents the sum
-    ///   of two matrices `a` and `b`
+    /// - An `Result` based on whether the two matrices were added 
+    ///   - An `Err` value when the two matrices have different shapes
+    ///   - An `Ok` value wrapped with a `Matrix` instance that represents the difference
+    ///     of the two matrices `a` and `b`
     pub fn subtract(mut a: Matrix<T>, mut b: Matrix<T>) -> Result<Matrix<T>, String> {
         if a.shape() != b.shape() {
             return Err("Cannot add the two matrices because 
@@ -131,5 +138,43 @@ impl<T: MulAssign + Clone + Number> MatrixUtilities<T> {
         }
         
         matrix
+    }
+
+    /// Multiplies two `Matrix` instances together and returns their product as a
+    /// new `Matrix` object
+    ///
+    /// ### Parameters
+    /// - `a`: One `Matrix` operand to be multiplied
+    /// - 'b': Another `Matrix` operand to be multiplied
+    ///
+    /// ### Returns
+    /// - A `Result` based on whether the two matrices were multiplied
+    ///     - An `Err` if the rows of `Matrix` a does not equal the columns of `Matrix` b
+    ///     - An `Ok` wrapped inside a `Matrix` object that represents the product between two
+    ///       matrices
+    pub fn multiply(a: Matrix<T>, b: Matrix<T>) -> Result<Matrix<T>, String> {    
+        if a.cols != b.rows {
+            return Err("The columns of matrix a do not 
+                equal the rows of matrix b!".to_string());
+        }
+
+        let mut new_mat = vec![];
+        for r in 0..a.rows {
+            let mut new_row = vec![];
+            for c in 0..b.cols {
+                let mut sum = T::default();
+                for k in 0..a.cols {
+                    sum += a.mat[r][k] * b.mat[k][c];
+                }
+                new_row.push(sum);
+            }
+            new_mat.push(Arc::from(new_row.as_slice()));
+        }
+
+        Ok(Matrix {
+            mat: new_mat.clone(),
+            rows: new_mat.clone().len(),
+            cols: new_mat[0].clone().len(),
+        })
     }
 }

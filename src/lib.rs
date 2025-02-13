@@ -66,6 +66,21 @@ mod tests {
             assert_eq!(mat.mat, vec![Arc::from(&[2, 4, 6][..]), Arc::from(&[8, 10, 12][..])])
         }
         #[test]
+        fn test_multiply_matrix() {
+            let mat = Matrix::default();
+            let arr: &[&[i64]] = &[&[1, 4, -2], &[3, 5, -6]];
+            let mat = MatrixUtilities::append_multiple(mat, arr);
+            
+            let mat2 = Matrix::default();
+            let arr2: &[&[i64]] = &[&[5, 2, 8, -1], &[3, 6, 4, 5], &[-2, 9, 7, -3]];
+            let mat2 = MatrixUtilities::append_multiple(mat2, arr2);
+
+            let result = MatrixUtilities::multiply(mat, mat2);
+            assert!(result.is_ok());
+            assert_eq!(result.unwrap().mat, vec![Arc::from([21, 8, 10, 25]), 
+                Arc::from([42, -18, 2, 40])])
+        }
+        #[test]
         fn test_sub_matrix() {
             let mut mat = Matrix::default();
             let arr: &[&[i64]] = &[&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
