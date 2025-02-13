@@ -8,5 +8,6 @@
   - [x] 1.5 - Code the arithmetic operators on the matrices
   - [x] 1.6 - Create a function that multiplies a matrix by 
   - a scalar constant value
-  - [ ] 1.7 - Code dot/cross product for a matrix
+  - [ ] 1.7 - Code dot product for two matrices
   - [ ] 1.8 - Solve two matrices using gaussian elimination
+  - [ ] 1.9 - Code cross product for 
