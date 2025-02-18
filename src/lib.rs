@@ -52,6 +52,29 @@ mod tests {
                 let result = MatrixUtilities::row_echelon_form(matrix);
                 assert_eq!(result.mat, expected);
             }
+            
+            #[test]
+            fn test_rref() {
+                let mat = Matrix {
+                    mat: vec![
+                        Arc::from(vec![1.0, 2.0, -1.0]),
+                        Arc::from(vec![0.0, 1.0, -3.0]),
+                        Arc::from(vec![0.0, 0.0, 0.0]),
+                    ],
+                    rows: 3,
+                    cols: 3,
+                };
+                
+                let expected_rref = vec![
+                    Arc::from(vec![1.0, 0.0, 5.0]),
+                    Arc::from(vec![0.0, 1.0, -3.0]),
+                    Arc::from(vec![0.0, 0.0, 0.0]) 
+                ];
+                
+                let result = MatrixUtilities::rref(mat);
+                
+                assert_eq!(result.mat, expected_rref);
+            }
         }
         
         mod matrix_operations_tests {

@@ -54,7 +54,7 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     }
     
     /// Computes the row echelon form for the given `matrix` and returns the result as an updated 
-    /// `Matrix` instance, if applicable
+    /// `Matrix` instance
     /// 
     /// ### Parameters
     /// - `matrix`: The `Matrix` needed to compute the row echelon form
@@ -67,14 +67,13 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
         
         for i in 0..rows {
             let pivot = matrix.mat[i][i];
-            if pivot == T::default() {
-                continue;
-            }
-            for c in 0..cols {
-                let row = Arc::make_mut(&mut matrix.mat[i]);
-                row[c] = row[c] / pivot;
-                if row[c] == -T::default() {
-                    row[c] = T::default();
+            if pivot != T::default() {
+                for c in 0..cols {
+                    let row = Arc::make_mut(&mut matrix.mat[i]);
+                    row[c] = row[c] / pivot;
+                    if row[c] == -T::default() {
+                        row[c] = T::default();
+                    }
                 }
             }
             
@@ -97,20 +96,55 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
         matrix
     }
     
-    /// Computes the reduced row echelon form (RREF) for the given matrix and returns the result
-    /// as a `Matrix`
+    /// Computes the reduced row echelon form (RREF) for the given `matrix` and returns the result
+    /// as a updated `Matrix` instance
     /// 
     /// ### Parameters
     /// - `matrix`: The `Matrix` needed to compute the reduced row echelon form
     /// 
     /// ### Returns
-    /// - A `Result` type determining whether a successful Matrix<T> was computed
-    ///   to the reduced row echelon form
-    ///     - An `Ok` variant with the matrix in reduced row echelon form
-    ///     - An `Err` variant containing a `String` representing the error in computing the reduced
-    ///       row echelon form of the `matrix`
-    pub fn rref(matrix: Matrix<T>) -> Result<Matrix<T>, String> {
-        Ok(matrix)
+    /// - A `Matrix` instance containing the given `matrix` in reduced row echelon form
+    pub fn rref(mut matrix: Matrix<T>) -> Matrix<T> {
+        let rows = matrix.rows;
+        let cols = matrix.cols;
+        
+        for i in 0..rows {
+            let pivot = matrix.mat[i][i];
+            if pivot != T::default() {
+                for c in 0..cols {
+                    let row = Arc::make_mut(&mut matrix.mat[i]);
+                    row[c] = row[c] / pivot;
+                }
+            }
+            
+            let pivot_row = Arc::clone(&matrix.mat[i]);
+            
+            for j in (i + 1)..rows {
+                let factor = matrix.mat[j][i];
+                let pivot_row_clone = Arc::clone(&pivot_row);
+                let (_, lower) = matrix.mat.split_at_mut(j);
+                let row_j = Arc::make_mut(&mut lower[0]);
+                
+                for c in 0..cols {
+                    row_j[c] = row_j[c] - factor * pivot_row_clone[c];
+                }
+            }
+        }
+        
+        for i in (0..rows).rev() {
+            for j in (0..i).rev() {
+                let factor = matrix.mat[j][i];
+                let pivot_row_clone = Arc::clone(&matrix.mat[i]);
+                let (_, lower) = matrix.mat.split_at_mut(j);
+                let row_j = Arc::make_mut(&mut lower[0]);
+                
+                for c in 0..cols {
+                    row_j[c] = row_j[c] - factor * pivot_row_clone[c];
+                }
+            }
+        }
+        
+        matrix
     }
 
     /// Adds two `Matrix` instances together and returns a new `Matrix` representing
