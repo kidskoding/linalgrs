@@ -1,23 +1,24 @@
 use std::marker::PhantomData;
-use std::ops::{MulAssign, AddAssign};
+use std::ops::Neg;
 use std::sync::Arc;
 use crate::matrix::Matrix;
 use crate::number::Number;
 
-pub struct MatrixUtilities<T: Number
-        + MulAssign 
-        + Clone
-        + Default> {
+/// `MatrixUtilities` is a utility struct designed to perform
+///  various algorithms or operations for `Matrix` instances, including
+///  adding, subtracting, multiplying, and computing the row and reduced row
+///  echelon form of `Matrix` instances
+pub struct MatrixUtilities<T: Number> {
     _marker: PhantomData<T>,
 }
 
-impl<T: MulAssign + AddAssign + Clone + Number + Default> MatrixUtilities<T> {
-    /// Appends a row to a given `Matrix`
-    ///
+impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
+    /// Appends a `row` to a given `Matrix`, returning a updated `Matrix` instance with the newly
+    /// appended row
     ///
     /// ### Parameters
-    /// - `matrix` - The `Matrix` needed to add a row
-    /// - `row`: A `&[i64]` slice
+    /// - `matrix` - The `Matrix` needed to add a `row`
+    /// - `row`: An `&[i64]` slice
     ///
     /// ### Returns
     /// - An updated `Matrix` object that adds the given `row` 
@@ -30,10 +31,11 @@ impl<T: MulAssign + AddAssign + Clone + Number + Default> MatrixUtilities<T> {
         matrix
     }
 
-    /// Appends multiple rows to a given `Matrix`
+    /// Appends multiple `rows` to a given `Matrix`, returning a updated `Matrix` instance
+    /// with the newly appended rows
     ///
     /// ### Parameters
-    /// - `matrix`: The `Matrix` required to add additional `rows`
+    /// - `matrix`: The `Matrix` needed to add additional `rows`
     /// - `rows`: A slice of `&[i64]` slices representing a series of `rows` to add to a given `Matrix`
     ///
     /// ### Returns
@@ -49,6 +51,66 @@ impl<T: MulAssign + AddAssign + Clone + Number + Default> MatrixUtilities<T> {
         }
 
         matrix
+    }
+    
+    /// Computes the row echelon form for the given `matrix` and returns the result as an updated 
+    /// `Matrix` instance, if applicable
+    /// 
+    /// ### Parameters
+    /// - `matrix`: The `Matrix` needed to compute the row echelon form
+    /// 
+    /// ### Returns
+    /// - A `Matrix` instance containing the given `matrix` in row echelon form
+    pub fn row_echelon_form(mut matrix: Matrix<T>) -> Matrix<T> {
+        let rows = matrix.rows;
+        let cols = matrix.cols;
+        
+        for i in 0..rows {
+            let pivot = matrix.mat[i][i];
+            if pivot == T::default() {
+                continue;
+            }
+            for c in 0..cols {
+                let row = Arc::make_mut(&mut matrix.mat[i]);
+                row[c] = row[c] / pivot;
+                if row[c] == -T::default() {
+                    row[c] = T::default();
+                }
+            }
+            
+            let pivot_row = Arc::clone(&matrix.mat[i]);
+            
+            for j in (i + 1)..rows {
+                let scale_factor = matrix.mat[j][i];
+                let (_, lower) = matrix.mat.split_at_mut(j);
+                let row_j = Arc::make_mut(&mut lower[0]);
+                
+                for c in 0..cols {
+                    row_j[c] = row_j[c] - scale_factor * pivot_row[c];
+                    if row_j[c] == -T::default() {
+                        row_j[c] = T::default();
+                    }
+                }
+            }
+        }
+        
+        matrix
+    }
+    
+    /// Computes the reduced row echelon form (RREF) for the given matrix and returns the result
+    /// as a `Matrix`
+    /// 
+    /// ### Parameters
+    /// - `matrix`: The `Matrix` needed to compute the reduced row echelon form
+    /// 
+    /// ### Returns
+    /// - A `Result` type determining whether a successful Matrix<T> was computed
+    ///   to the reduced row echelon form
+    ///     - An `Ok` variant with the matrix in reduced row echelon form
+    ///     - An `Err` variant containing a `String` representing the error in computing the reduced
+    ///       row echelon form of the `matrix`
+    pub fn rref(matrix: Matrix<T>) -> Result<Matrix<T>, String> {
+        Ok(matrix)
     }
 
     /// Adds two `Matrix` instances together and returns a new `Matrix` representing

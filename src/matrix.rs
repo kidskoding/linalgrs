@@ -13,7 +13,7 @@ use crate::number::Number;
 /// Matrices are used to represent and solve systems of linear equations, perform
 /// linear transformations, and more
 #[derive(Clone)]
-pub struct Matrix<T: Number + Clone> {
+pub struct Matrix<T: Number> {
     /// Represents a vector of `Arc` atomic reference counted `[i64]` arrays, 
     /// where each represents a row in the matrix
     pub mat: Vec<Arc<[T]>>,
