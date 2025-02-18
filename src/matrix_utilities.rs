@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::ops::Neg;
 use std::sync::Arc;
@@ -36,10 +37,10 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///
     /// ### Parameters
     /// - `matrix`: The `Matrix` needed to add additional `rows`
-    /// - `rows`: A slice of `&[i64]` slices representing a series of `rows` to add to a given `Matrix`
+    /// - `rows`: A slice of `&[i64]` slices representing a series of rows to add to a given `Matrix`
     ///
     /// ### Returns
-    /// - An updated `Matrix` object that adds all arrays to this
+    /// - An updated `Matrix` object that adds all `rows` to this
     ///   `Matrix`
     pub fn append_multiple(mut matrix: Matrix<T>, rows: &[&[T]]) -> Matrix<T> {
         for &row in rows {
@@ -145,6 +146,42 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
         }
         
         matrix
+    }
+    
+    /// Performs the [Gaussian Elimination](https://en.wikipedia.org/wiki/Gaussian_elimination)
+    /// technique on a given `matrix` to solve for its system of equations' missing variables 
+    /// (e.g. x, y, and z)
+    /// 
+    /// ### Parameters
+    /// - `matrix`: The `Matrix` to perform Gaussian Elimination on
+    /// 
+    /// ### Returns
+    /// - A `Result` based on whether the matrix had a solution
+    ///     - An `Err` with an enclosed `String` representing the error state of solving the `matrix`
+    ///       using Gaussian Elimination (i.e. no solution or infinitely many solutions)
+    ///     - An `Ok` enclosed with a `HashMap` containing each variable name 
+    ///       mapped to a value with its solution
+    pub fn gaussian_elimination(mut matrix: Matrix<T>) -> Result<HashMap<char, T>, String> {
+        matrix = MatrixUtilities::rref(matrix);
+        let mut pivot_vars = HashMap::new();
+        
+        for i in 0..matrix.rows {
+            let pivot = matrix.mat[i][i];
+            
+            if pivot != T::default() {
+                pivot_vars.insert(('a' as u8 + i as u8) as char, matrix.mat[i][matrix.cols - 1]);
+            } else if matrix.mat[i][matrix.cols - 1] != T::default() {
+                return Err("No solution exists for the given matrix.".to_string());
+            }
+        }
+
+        for i in 0..matrix.rows {
+            if matrix.mat[i].iter().all(|&x| x == T::default()) {
+                return Err("Infinitely many solutions exist for the given matrix.".to_string());
+            }
+        }
+        
+        Ok(pivot_vars)
     }
 
     /// Adds two `Matrix` instances together and returns a new `Matrix` representing
