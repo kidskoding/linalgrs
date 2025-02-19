@@ -1,21 +1,22 @@
+extern crate num;
+
 use std::ops::Range;
 use std::sync::Arc;
 use crate::number::Number;
 
-/// A struct representing that of a `Matrix` in linear algebra
+/// A struct representing that of a `Matrix` in linear algebra. This example models a `Matrix`
+/// by building one as a computational representation along with including 
+/// core matrix operations, such as shape and determinant 
 /// 
-/// Contains a computational representation of a `Matrix`, along with
-/// core matrix operations, such as shape and determinant
-///
 /// In Linear Algebra, a `Matrix` is a rectangular array of numbers,
 /// symbols, or expressions, arranged in rows and columns
 /// 
 /// Matrices are used to represent and solve systems of linear equations, perform
 /// linear transformations, and more
 #[derive(Clone)]
-pub struct Matrix<T: Number> {
-    /// Represents a vector of `Arc` atomic reference counted `[i64]` arrays, 
-    /// where each represents a row in the matrix
+pub struct Matrix<T: Number + num::One> {
+    /// Represents a vector of `Arc` atomic reference counting `[i64]` arrays, 
+    /// where each represents a row in the `Matrix`
     pub mat: Vec<Arc<[T]>>,
     
     /// Stores the number of rows in the matrix
@@ -25,11 +26,11 @@ pub struct Matrix<T: Number> {
     pub cols: usize,
 }
 
-impl<T: Number> Default for Matrix<T> {
-    /// Creates a new instance of this `Matrix`
+impl<T: Number + num::One> Default for Matrix<T> {
+    /// Creates a default representation of this `Matrix`
     /// 
     /// ### Returns
-    /// - A newly constructed `Matrix` object
+    /// - A default constructed `Matrix` object
     fn default() -> Self {
         Matrix {
             mat: vec![],
@@ -39,8 +40,12 @@ impl<T: Number> Default for Matrix<T> {
     }
 }
 
-impl<T: Number> Matrix<T> {
+impl<T: Number + num::One> Matrix<T> {
     /// Compute the shape of this `Matrix`
+    /// 
+    /// The shape of a matrix is defined by the number of rows and
+    /// columns it contains and is typically represented as a tuple pair -
+    /// `(rows, columns)`
     /// 
     /// ### Returns
     /// - A tuple of two positive integers - `(usize, usize)` - representing
@@ -56,30 +61,92 @@ impl<T: Number> Matrix<T> {
         (self.rows, self.cols)
     }
     
-    /// Compute the determinant of this `Matrix`. 
+    /// Compute the determinant of this `Matrix`
     /// 
-    /// In a `Matrix` with a shape of
-    /// `(2, 2)`, a `Matrix`'s determinant is equal to `ad - bc`, which is the difference
+    /// - In a `Matrix` with a shape of `(1, 1)`, a `Matrix`'s determinant is
+    /// simply that number itself
+    /// 
+    /// - In a `Matrix` with a shape of `(2, 2)`, a `Matrix`'s determinant is 
+    /// equal to `ad - bc`, which is the difference
     /// between the left diagonal product and the right diagonal product
+    /// 
+    /// - Any other `Matrix` bigger than a `(2, 2)` (i.e. `(3, 3)`, `(4, 4)`, etc.) utilizes the 
+    /// [Laplace expansion](https://en.wikipedia.org/wiki/Laplace_expansion) approach. 
+    /// The [Laplace expansion](https://en.wikipedia.org/wiki/Laplace_expansion) approach involves expanding
+    /// the determinant along a row or column breaking it down into smaller sub-matrices until reaching
+    /// 2x2 matrices, where the determinant can directly be calculated using the formula `ad - bc` 
     /// 
     /// ### Returns
     /// - A `Result` determining whether the determinant could be calculated
     ///     - An `Err` if the `Matrix`'s shape could not be calculated 
     ///     - An `Ok` with the determinant value, if this `Matrix`'s 
     ///       shape is `(2, 2)` - 2 rows and 2 columns
-    pub fn determinant(&mut self) -> Result<T, String> {
-        if self.shape() == (2, 2) {
-            let first = 0;
-            let last = self.mat.len() - 1;
-            
-            let ad = self.mat[first][first] * self.mat[last][last];
-            let bc = self.mat[first][last] * self.mat[last][first];
-            
-            return Ok(ad - bc);
+    pub fn determinant(&mut self) -> Option<T> {
+        let (rows, cols) = self.shape();
+        if rows != cols {
+            return None;
         }
         
-        Err("Unable to compute determinant. The shape must be (2, 2)"
-            .to_string())
+        match rows {
+            1 => Some(self.mat[0][0]),
+            2 => {
+                let ad = self.mat[0][0] * self.mat[1][1];
+                let bc = self.mat[0][1] * self.mat[1][0];
+                
+                Some(ad - bc)
+            }
+            _ => Some(self.laplace_expansion_det_helper()),
+        }
+    }
+    fn laplace_expansion_det_helper(&mut self) -> T { 
+        let (rows, cols) = self.shape();
+        
+        if rows == 1 { 
+            return self.mat[0][0];
+        }
+        if rows == 2 {
+            let ad = self.mat[0][0] * self.mat[1][1];
+            let bc = self.mat[0][1] * self.mat[1][0];
+            return ad - bc;
+        }
+
+        let mut det = T::default();
+
+        for col in 0..cols {
+            let mut sub_matrix = self.create_laplace_expansion_submatrix(col);
+
+            let sign = if col % 2 == 0 {
+                T::default() + num::One::one()
+            } else {
+                T::default() - num::One::one()
+            };
+
+            det += sign * self.mat[0][col] * sub_matrix.laplace_expansion_det_helper();
+        }
+
+        det
+    }
+    fn create_laplace_expansion_submatrix(&mut self, exclude_col: usize) -> Matrix<T> {
+        let (rows, cols) = self.shape();
+        let mut new_matrix = Vec::new();
+
+        for i in 1..rows {
+            let filtered_row: Vec<T> = self.mat[i]
+                .iter()
+                .enumerate()
+                .filter_map(|(j, &val)| 
+                    if j != exclude_col { Some(val) } 
+                    else { None })
+                .collect();
+
+            new_matrix.push(Arc::from(filtered_row.as_slice()));
+        }
+
+        Matrix {
+            mat: new_matrix,
+            rows: rows - 1,
+            cols: cols - 1,
+        }
     }
 
 

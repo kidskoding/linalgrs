@@ -1,3 +1,5 @@
+extern crate num;
+
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::ops::Neg;
@@ -13,7 +15,7 @@ pub struct MatrixUtilities<T: Number> {
     _marker: PhantomData<T>,
 }
 
-impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
+impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     /// Appends a `row` to a given `Matrix`, returning a updated `Matrix` instance with the newly
     /// appended row
     ///
@@ -326,7 +328,8 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///       dot product
     pub fn dot(a: Matrix<T>, b: Matrix<T>) -> Result<T, String> {
         if a.cols != b.rows {
-            return Err("Cannot get the dot product: The number of columns in A must match the numbe                 r of rows in B.".to_string());
+            return Err("Cannot get the dot product: The number of columns in A \
+                must match the number of rows in B.".to_string());
         }
         if !(a.rows == 1 && b.cols == 1) {
             return Err("Dot product is only valid for a 
