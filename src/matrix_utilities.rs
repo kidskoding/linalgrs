@@ -164,22 +164,38 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     ///     - An `Ok` enclosed with a `HashMap` containing each variable name 
     ///       mapped to a value with its solution
     pub fn gaussian_elimination(mut matrix: Matrix<T>) -> Result<HashMap<char, T>, String> {
-        matrix = MatrixUtilities::rref(matrix);
+        matrix = MatrixUtilities::row_echelon_form(matrix);
         let mut pivot_vars = HashMap::new();
+        let num_rows = matrix.rows;
+        let num_cols = matrix.cols;
         
-        for i in 0..matrix.rows {
-            let pivot = matrix.mat[i][i];
+        let mut solutions = vec![T::default(); num_rows];
+        
+        for i in (0..num_rows).rev() {
+            let mut sum = T::default();
             
-            if pivot != T::default() {
-                pivot_vars.insert(('a' as u8 + i as u8) as char, matrix.mat[i][matrix.cols - 1]);
-            } else if matrix.mat[i][matrix.cols - 1] != T::default() {
-                return Err("No solution exists for the given matrix.".to_string());
+            for j in (i + 1)..num_cols - 1 {
+                sum = sum + matrix.mat[i][j] * solutions[j];
+            }
+            
+            solutions[i] = matrix.mat[i][num_cols - 1] - sum;
+            solutions[i] = solutions[i] / matrix.mat[i][i];
+            
+            pivot_vars.insert(('a' as u8 + i as u8) as char, solutions[i]);
+        }
+        
+        for i in 0..num_rows {
+            if matrix.mat[i].iter().all(|&x| x == T::default()) 
+                && matrix.mat[i][num_cols - 1] == T::default() {
+                
+                return Err("Infinitely many solutions exist for the given matrix.".to_string());
             }
         }
-
-        for i in 0..matrix.rows {
-            if matrix.mat[i].iter().all(|&x| x == T::default()) {
-                return Err("Infinitely many solutions exist for the given matrix.".to_string());
+        
+        for i in 0..num_rows {
+            let pivot = matrix.mat[i][i];
+            if pivot == T::default() && matrix.mat[i][num_cols - 1] != T::default() {
+                return Err("No solution exists for the given matrix.".to_string());
             }
         }
         
