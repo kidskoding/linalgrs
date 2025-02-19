@@ -355,6 +355,25 @@ mod tests {
                 let result = MatrixUtilities::dot(mat, mat2);
                 assert!(result.is_err());
             }
+            #[test]
+            fn test_gauss_jordan_elimination_unique_solution() {
+                let matrix = Matrix {
+                    mat: vec![
+                        Arc::from(vec![2.0, 1.0, -1.0, 8.0]),
+                        Arc::from(vec![-3.0, -1.0, 2.0, -11.0]),
+                        Arc::from(vec![-2.0, 1.0, 2.0, -3.0]),
+                    ],
+                    rows: 3,
+                    cols: 4,
+                };
+
+                let result = MatrixUtilities::gauss_jordan_elimination(matrix);
+                assert!(result.is_ok());
+                let pivot_vars = result.unwrap();
+                assert_eq!(pivot_vars.get(&'a'), Some(&2.0));
+                assert_eq!(pivot_vars.get(&'b'), Some(&3.0));
+                assert_eq!(pivot_vars.get(&'c'), Some(&-1.0));
+            }
         }
     }
 }
