@@ -25,6 +25,102 @@ mod tests {
             mat = MatrixUtilities::append(mat, &arr);
             assert_eq!(mat.shape(), (1, 3))
         }
+        #[test]
+        fn test_transpose() {
+            let mut mat = Matrix {
+                mat: vec![
+                    Arc::from([1, 2, 3]),
+                    Arc::from([4, 5, 6]),
+                ],
+                rows: 2,
+                cols: 3,
+            };
+
+            let transposed = mat.transpose();
+
+            let expected = Matrix {
+                mat: vec![
+                    Arc::from([1, 4]),
+                    Arc::from([2, 5]),
+                    Arc::from([3, 6]),
+                ],
+                rows: 3,
+                cols: 2,
+            };
+
+            assert_eq!(transposed.mat, expected.mat);
+            assert_eq!(transposed.rows, expected.rows);
+            assert_eq!(transposed.cols, expected.cols);
+        }
+
+        mod determinant_tests {
+            use std::sync::Arc;
+            use crate::matrix::Matrix;
+            #[test]
+            fn test_determinant_1x1() {
+                let mut matrix = Matrix {
+                    mat: vec![Arc::new([1])],
+                    rows: 1,
+                    cols: 1,
+                };
+                assert_eq!(matrix.determinant().unwrap(), 1);
+            }
+            #[test]
+            fn test_determinant_2x2() {
+                let mut matrix = Matrix {
+                    mat: vec![
+                        Arc::new([1, 2]),
+                        Arc::new([3, 4]),
+                    ],
+                    rows: 2,
+                    cols: 2,
+                };
+                assert_eq!(matrix.determinant().unwrap(), -2);
+            }
+            #[test]
+            fn test_determinant_3x3() {
+                let mut matrix = Matrix {
+                    mat: vec![
+                        Arc::new([1, 2, 3]),
+                        Arc::new([0, 1, 4]),
+                        Arc::new([5, 6, 0]),
+                    ],
+                    rows: 3,
+                    cols: 3,
+                };
+
+                let result = matrix.determinant();
+                assert_eq!(result.unwrap(), 1);
+            }
+            #[test]
+            fn test_determinant_4x4() {
+                let mut matrix = Matrix {
+                    mat: vec![
+                        Arc::new([1, 0, 2, -1]),
+                        Arc::new([3, 0, 0, 5]),
+                        Arc::new([2, 1, 4, -3]),
+                        Arc::new([1, 0, 5, 0]),
+                    ],
+                    rows: 4,
+                    cols: 4,
+                };
+                assert_eq!(matrix.determinant().unwrap(), 30);
+            }
+            #[test]
+            fn test_non_square_matrix() {
+                let mut matrix = Matrix {
+                    mat: vec![
+                        Arc::new([1, 2, 3]),
+                        Arc::new([4, 5, 6]),
+                    ],
+                    rows: 2,
+                    cols: 3,
+                };
+
+                let result = matrix.determinant();
+                assert_eq!(result, None);
+            }
+        }
         
         mod gaussian_elimination_tests {
             use crate::matrix::Matrix;
@@ -258,75 +354,6 @@ mod tests {
 
                 let result = MatrixUtilities::dot(mat, mat2);
                 assert!(result.is_err());
-            }
-        }
-        
-        mod determinant_tests {
-            use std::sync::Arc;
-            use crate::matrix::Matrix;
-            #[test]
-            fn test_determinant_1x1() {
-                let mut matrix = Matrix {
-                    mat: vec![Arc::new([1])],
-                    rows: 1,
-                    cols: 1,
-                };
-                assert_eq!(matrix.determinant().unwrap(), 1);
-            }
-            #[test]
-            fn test_determinant_2x2() {
-                let mut matrix = Matrix {
-                    mat: vec![
-                        Arc::new([1, 2]),
-                        Arc::new([3, 4]),
-                    ],
-                    rows: 2,
-                    cols: 2,
-                };
-                assert_eq!(matrix.determinant().unwrap(), -2);
-            }
-            #[test]
-            fn test_determinant_3x3() {
-                let mut matrix = Matrix {
-                    mat: vec![
-                        Arc::new([1, 2, 3]),
-                        Arc::new([0, 1, 4]),
-                        Arc::new([5, 6, 0]),
-                    ],
-                    rows: 3,
-                    cols: 3,
-                };
-                
-                let result = matrix.determinant();
-                assert_eq!(result.unwrap(), 1);
-            }
-            #[test]
-            fn test_determinant_4x4() {
-                let mut matrix = Matrix {
-                    mat: vec![
-                        Arc::new([1, 0, 2, -1]),
-                        Arc::new([3, 0, 0, 5]),
-                        Arc::new([2, 1, 4, -3]),
-                        Arc::new([1, 0, 5, 0]),
-                    ],
-                    rows: 4,
-                    cols: 4,
-                };
-                assert_eq!(matrix.determinant().unwrap(), 30);
-            }
-            #[test]
-            fn test_non_square_matrix() {
-                let mut matrix = Matrix {
-                    mat: vec![
-                        Arc::new([1, 2, 3]),
-                        Arc::new([4, 5, 6]),
-                    ],
-                    rows: 2,
-                    cols: 3,
-                };
-                
-                let result = matrix.determinant();
-                assert_eq!(result, None);
             }
         }
     }

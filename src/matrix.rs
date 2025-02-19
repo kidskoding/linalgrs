@@ -185,4 +185,32 @@ impl<T: Number + num::One> Matrix<T> {
             cols: col_range.len()
         })
     }
+    
+    /// Computes the transpose of this `Matrix`
+    /// 
+    /// The transpose of a `Matrix` is the resulting matrix where the columns are
+    /// formed from the corresponding rows of the original matrix
+    /// 
+    /// ### Returns
+    /// - A `Matrix` instance containing the transposed matrix
+    pub fn transpose(&mut self) -> Matrix<T> {
+        let mut transposed_mat: Vec<Vec<T>> = vec![vec![T::default(); self.rows]; self.cols];
+
+        for i in 0..self.rows {
+            for j in 0..self.cols {
+                transposed_mat[j][i] = self.mat[i][j];
+            }
+        }
+
+        let transposed_mat: Vec<Arc<[T]>> = transposed_mat
+            .into_iter()
+            .map(|row| Arc::from(row.into_boxed_slice()))
+            .collect();
+
+        Matrix {
+            mat: transposed_mat,
+            rows: self.cols,
+            cols: self.rows,
+        }
+    }
 }
