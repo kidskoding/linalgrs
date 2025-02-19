@@ -1,7 +1,7 @@
 use std::ops::{Add, Sub, Mul, Div, 
                AddAssign, SubAssign, MulAssign, DivAssign};
 
-/// A Number trait to restrict a `Matrix`'s `T` generic to only numeric types
+/// A Number trait to restrict a `Matrix`'s `T` generic to only signed numeric types
 pub trait Number: 
     Add<Output = Self>
     + Sub<Output = Self> 

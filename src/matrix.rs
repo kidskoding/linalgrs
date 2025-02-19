@@ -161,7 +161,7 @@ impl<T: Number + num::One> Matrix<T> {
     /// ### Returns
     /// - A `Result` containing whether this `Matrix` could be extracted 
     ///   into a sub-matrix or not
-    ///     - An `Ok` with the new sub-matrix
+    ///     - An `Ok` variant containing the new sub-matrix as a `Matrix` instance
     ///     - An `Err` with a custom `String` error message if either or
     ///       both provided ranges were out of bounds
     pub fn sub_matrix(
