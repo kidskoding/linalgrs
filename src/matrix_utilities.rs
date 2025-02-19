@@ -359,4 +359,40 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
 
         Ok(sum)
     }
+
+    /// Performs the [Gauss-Jordan Elimination](https://online.stat.psu.edu/statprogram/reviews/matrix-algebra/gauss-jordan-elimination)
+    /// technique on a given `matrix` to solve for its system of equations' missing variables 
+    /// (e.g. x, y, and z)
+    ///
+    /// ### Parameters
+    /// - `matrix`: The `Matrix` to perform Gauss-Jordan Elimination on
+    ///
+    /// ### Returns
+    /// - A `Result` based on whether the matrix had a solution
+    ///     - An `Err` with an enclosed `String` representing the error state of solving the `matrix`
+    ///       using Gaussian Elimination (i.e. no solution or infinitely many solutions)
+    ///     - An `Ok` enclosed with a `HashMap` containing each variable name 
+    ///       mapped to a value with its solution
+    pub fn gauss_jordan_elimination(mut matrix: Matrix<T>) -> Result<HashMap<char, T>, String> {
+        matrix = MatrixUtilities::rref(matrix);
+        let mut pivot_vars = HashMap::new();
+
+        for i in 0..matrix.rows {
+            let pivot = matrix.mat[i][i];
+
+            if pivot != T::default() {
+                pivot_vars.insert(('a' as u8 + i as u8) as char, matrix.mat[i][matrix.cols - 1]);
+            } else if matrix.mat[i][matrix.cols - 1] != T::default() {
+                return Err("No solution exists for the given matrix.".to_string());
+            }
+        }
+
+        for i in 0..matrix.rows {
+            if matrix.mat[i].iter().all(|&x| x == T::default()) {
+                return Err("Infinitely many solutions exist for the given matrix.".to_string());
+            }
+        }
+
+        Ok(pivot_vars)
+    }
 }
