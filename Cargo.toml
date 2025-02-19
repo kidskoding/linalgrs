@@ -4,6 +4,7 @@ authors = ["Anirudh Konidala", "Aarnav Varanasi"]
 version = "0.1.0"
 edition = "2021"
 description = "A Rust crate with Linear Algebra concept implementations from scratch!"
+license = "MIT"
 
 [dependencies]
 num = "0.4.3"
