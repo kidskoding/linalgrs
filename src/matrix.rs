@@ -1,107 +1,103 @@
 extern crate num;
 
+use crate::number::Number;
 use std::ops::Range;
 use std::sync::Arc;
-use crate::number::Number;
 
 /// A struct representing that of a `Matrix` in linear algebra. This example models a `Matrix`
-/// by building one as a computational representation along with including 
-/// core matrix operations, such as shape and determinant 
-/// 
+/// by building one as a computational representation along with including
+/// core matrix operations, such as shape and determinant
+///
 /// In Linear Algebra, a `Matrix` is a rectangular array of numbers,
 /// symbols, or expressions, arranged in rows and columns
-/// 
+///
 /// Matrices are used to represent and solve systems of linear equations, perform
 /// linear transformations, and more
 #[derive(Clone)]
 pub struct Matrix<T: Number + num::One> {
-    /// Represents a vector of `Arc` atomic reference counting `[i64]` arrays, 
+    /// Represents a vector of `Arc` atomic reference counting `[i64]` arrays,
     /// where each represents a row in the `Matrix`
     pub mat: Vec<Arc<[T]>>,
-    
+
     /// Stores the number of rows in the matrix
     pub rows: usize,
-    
+
     /// Stores the number of columns in the matrix
     pub cols: usize,
 }
 
 impl<T: Number + num::One> Default for Matrix<T> {
     /// Creates a default representation of this `Matrix`
-    /// 
+    ///
     /// ### Returns
     /// - A default constructed `Matrix` object
     fn default() -> Self {
         Matrix {
             mat: vec![],
             rows: 0,
-            cols: 0
+            cols: 0,
         }
     }
 }
 
 impl<T: Number + num::One> Matrix<T> {
     /// Compute the shape of this `Matrix`
-    /// 
+    ///
     /// The shape of a matrix is defined by the number of rows and
     /// columns it contains and is typically represented as a tuple pair -
     /// `(rows, columns)`
-    /// 
+    ///
     /// ### Returns
     /// - A tuple of two positive integers - `(usize, usize)` - representing
     ///   the rows and columns of the matrix
     pub fn shape(&mut self) -> (usize, usize) {
         self.rows = self.mat.len();
-        self.cols = if self.rows > 0 {
-            self.mat[0].len()
-        } else {
-            0
-        };
-        
+        self.cols = if self.rows > 0 { self.mat[0].len() } else { 0 };
+
         (self.rows, self.cols)
     }
-    
+
     /// Compute the determinant of this `Matrix`
-    /// 
+    ///
     /// - In a `Matrix` with a shape of `(1, 1)`, a `Matrix`'s determinant is
     /// simply that number itself
-    /// 
-    /// - In a `Matrix` with a shape of `(2, 2)`, a `Matrix`'s determinant is 
+    ///
+    /// - In a `Matrix` with a shape of `(2, 2)`, a `Matrix`'s determinant is
     /// equal to `ad - bc`, which is the difference
     /// between the left diagonal product and the right diagonal product
-    /// 
-    /// - Any other `Matrix` bigger than a `(2, 2)` (i.e. `(3, 3)`, `(4, 4)`, etc.) utilizes the 
-    /// [Laplace expansion](https://en.wikipedia.org/wiki/Laplace_expansion) approach. 
+    ///
+    /// - Any other `Matrix` bigger than a `(2, 2)` (i.e. `(3, 3)`, `(4, 4)`, etc.) utilizes the
+    /// [Laplace expansion](https://en.wikipedia.org/wiki/Laplace_expansion) approach.
     /// The [Laplace expansion](https://en.wikipedia.org/wiki/Laplace_expansion) approach involves expanding
     /// the determinant along a row or column breaking it down into smaller sub-matrices until reaching
-    /// 2x2 matrices, where the determinant can directly be calculated using the formula `ad - bc` 
-    /// 
+    /// 2x2 matrices, where the determinant can directly be calculated using the formula `ad - bc`
+    ///
     /// ### Returns
     /// - A `Result` determining whether the determinant could be calculated
-    ///     - An `Err` if the `Matrix`'s shape could not be calculated 
-    ///     - An `Ok` with the determinant value, if this `Matrix`'s 
+    ///     - An `Err` if the `Matrix`'s shape could not be calculated
+    ///     - An `Ok` with the determinant value, if this `Matrix`'s
     ///       shape is `(2, 2)` - 2 rows and 2 columns
     pub fn determinant(&mut self) -> Option<T> {
         let (rows, cols) = self.shape();
         if rows != cols {
             return None;
         }
-        
+
         match rows {
             1 => Some(self.mat[0][0]),
             2 => {
                 let ad = self.mat[0][0] * self.mat[1][1];
                 let bc = self.mat[0][1] * self.mat[1][0];
-                
+
                 Some(ad - bc)
             }
             _ => Some(self.laplace_expansion_det_helper()),
         }
     }
-    fn laplace_expansion_det_helper(&mut self) -> T { 
+    fn laplace_expansion_det_helper(&mut self) -> T {
         let (rows, cols) = self.shape();
-        
-        if rows == 1 { 
+
+        if rows == 1 {
             return self.mat[0][0];
         }
         if rows == 2 {
@@ -134,9 +130,7 @@ impl<T: Number + num::One> Matrix<T> {
             let filtered_row: Vec<T> = self.mat[i]
                 .iter()
                 .enumerate()
-                .filter_map(|(j, &val)| 
-                    if j != exclude_col { Some(val) } 
-                    else { None })
+                .filter_map(|(j, &val)| if j != exclude_col { Some(val) } else { None })
                 .collect();
 
             new_matrix.push(Arc::from(filtered_row.as_slice()));
@@ -149,17 +143,16 @@ impl<T: Number + num::One> Matrix<T> {
         }
     }
 
-
     /// Get a sub-matrix of this `Matrix`
     ///
     /// ### Parameters
-    /// - `row_range` - A `Range<usize>` indicating the range of 
+    /// - `row_range` - A `Range<usize>` indicating the range of
     ///    rows to extract from this `Matrix`
     /// - `col_range` - A `Range<usize>` indicating the range of
     ///    columns to extract from this `Matrix`
     ///
     /// ### Returns
-    /// - A `Result` containing whether this `Matrix` could be extracted 
+    /// - A `Result` containing whether this `Matrix` could be extracted
     ///   into a sub-matrix or not
     ///     - An `Ok` variant containing the new sub-matrix as a `Matrix` instance
     ///     - An `Err` with a custom `String` error message if either or
@@ -167,7 +160,7 @@ impl<T: Number + num::One> Matrix<T> {
     pub fn sub_matrix(
         &mut self,
         row_range: Range<usize>,
-        col_range: Range<usize>
+        col_range: Range<usize>,
     ) -> Result<Matrix<T>, String> {
         if row_range.end > self.rows || col_range.end > self.cols {
             return Err("Range out of bounds!".to_string());
@@ -182,15 +175,15 @@ impl<T: Number + num::One> Matrix<T> {
         Ok(Matrix {
             mat: new_mat,
             rows: row_range.len(),
-            cols: col_range.len()
+            cols: col_range.len(),
         })
     }
-    
+
     /// Computes the transpose of this `Matrix`
-    /// 
+    ///
     /// The transpose of a `Matrix` is the resulting matrix where the columns are
     /// formed from the corresponding rows of the original matrix
-    /// 
+    ///
     /// ### Returns
     /// - A `Matrix` instance containing the transposed matrix
     pub fn transpose(&mut self) -> Matrix<T> {
@@ -213,4 +206,28 @@ impl<T: Number + num::One> Matrix<T> {
             cols: self.rows,
         }
     }
+
+    /// Generates an N by N identity matrix
+    ///
+    /// The identity `Matrix` is a matrix that when multiplied by another matrix yields that other
+    /// matrix.
+    ///
+    /// ### Returns
+    /// - An N by N identity `Matrix`
+    pub fn identity(n: usize) -> Matrix<T> {
+        let mut output: Vec<Arc<[T]>> = vec![];
+        for i in 0..n {
+            let mut zeroes = vec![T::default(); n];
+            zeroes[i] = T::one();
+            let arr = &zeroes[..];
+            output.push(Arc::from(arr));
+        }
+
+        Matrix {
+            mat: output,
+            rows: n,
+            cols: n,
+        }
+    }
 }
+

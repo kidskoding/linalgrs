@@ -5,16 +5,16 @@ pub mod number;
 #[cfg(test)]
 mod tests {
     mod matrix_tests {
-        use std::sync::Arc;
         use crate::matrix::Matrix;
         use crate::matrix_utilities::MatrixUtilities;
-        
+        use std::sync::Arc;
+
         #[test]
         fn test_matrix() {
             let mut mat = Matrix::default();
             let arr = [1, 2, 3];
             mat = MatrixUtilities::append(mat, &arr);
-            
+
             let expected: Vec<Arc<[i64]>> = vec![Arc::new(arr)];
             assert_eq!(mat.mat, expected);
         }
@@ -28,10 +28,7 @@ mod tests {
         #[test]
         fn test_transpose() {
             let mut mat = Matrix {
-                mat: vec![
-                    Arc::from([1, 2, 3]),
-                    Arc::from([4, 5, 6]),
-                ],
+                mat: vec![Arc::from([1, 2, 3]), Arc::from([4, 5, 6])],
                 rows: 2,
                 cols: 3,
             };
@@ -39,11 +36,7 @@ mod tests {
             let transposed = mat.transpose();
 
             let expected = Matrix {
-                mat: vec![
-                    Arc::from([1, 4]),
-                    Arc::from([2, 5]),
-                    Arc::from([3, 6]),
-                ],
+                mat: vec![Arc::from([1, 4]), Arc::from([2, 5]), Arc::from([3, 6])],
                 rows: 3,
                 cols: 2,
             };
@@ -53,9 +46,27 @@ mod tests {
             assert_eq!(transposed.cols, expected.cols);
         }
 
+        #[test]
+        fn test_identity() {
+            let expected = Matrix {
+                mat: vec![
+                    Arc::from([1, 0, 0]),
+                    Arc::from([0, 1, 0]),
+                    Arc::from([0, 0, 1]),
+                ],
+                cols: 3,
+                rows: 3,
+            };
+
+            let eye = Matrix::identity(3);
+            assert_eq!(eye.mat, expected.mat);
+            assert_eq!(eye.cols, expected.cols);
+            assert_eq!(eye.rows, expected.rows);
+        }
+
         mod determinant_tests {
-            use std::sync::Arc;
             use crate::matrix::Matrix;
+            use std::sync::Arc;
             #[test]
             fn test_determinant_1x1() {
                 let mut matrix = Matrix {
@@ -68,10 +79,7 @@ mod tests {
             #[test]
             fn test_determinant_2x2() {
                 let mut matrix = Matrix {
-                    mat: vec![
-                        Arc::new([1, 2]),
-                        Arc::new([3, 4]),
-                    ],
+                    mat: vec![Arc::new([1, 2]), Arc::new([3, 4])],
                     rows: 2,
                     cols: 2,
                 };
@@ -109,10 +117,7 @@ mod tests {
             #[test]
             fn test_non_square_matrix() {
                 let mut matrix = Matrix {
-                    mat: vec![
-                        Arc::new([1, 2, 3]),
-                        Arc::new([4, 5, 6]),
-                    ],
+                    mat: vec![Arc::new([1, 2, 3]), Arc::new([4, 5, 6])],
                     rows: 2,
                     cols: 3,
                 };
@@ -121,12 +126,12 @@ mod tests {
                 assert_eq!(result, None);
             }
         }
-        
+
         mod gaussian_elimination_tests {
             use crate::matrix::Matrix;
             use crate::matrix_utilities::MatrixUtilities;
             use std::sync::Arc;
-            
+
             #[test]
             fn test_row_echelon_form() {
                 let matrix = Matrix {
@@ -148,7 +153,7 @@ mod tests {
                 let result = MatrixUtilities::row_echelon_form(matrix);
                 assert_eq!(result.mat, expected);
             }
-            
+
             #[test]
             fn test_rref() {
                 let mat = Matrix {
@@ -160,15 +165,15 @@ mod tests {
                     rows: 3,
                     cols: 3,
                 };
-                
+
                 let expected_rref = vec![
                     Arc::from(vec![1.0, 0.0, 5.0]),
                     Arc::from(vec![0.0, 1.0, -3.0]),
-                    Arc::from(vec![0.0, 0.0, 0.0]) 
+                    Arc::from(vec![0.0, 0.0, 0.0]),
                 ];
-                
+
                 let result = MatrixUtilities::rref(mat);
-                
+
                 assert_eq!(result.mat, expected_rref);
             }
 
@@ -205,7 +210,10 @@ mod tests {
 
                 let result = MatrixUtilities::gaussian_elimination(matrix);
                 assert!(result.is_err());
-                assert_eq!(result.err(), Some("No solution exists for the given matrix.".to_string()));
+                assert_eq!(
+                    result.err(),
+                    Some("No solution exists for the given matrix.".to_string())
+                );
             }
             #[test]
             fn test_gaussian_elimination_infinitely_many_solutions() {
@@ -221,14 +229,17 @@ mod tests {
 
                 let result = MatrixUtilities::gaussian_elimination(matrix);
                 assert!(result.is_err());
-                assert_eq!(result.err(), Some("Infinitely many solutions exist for the given matrix.".to_string()));
+                assert_eq!(
+                    result.err(),
+                    Some("Infinitely many solutions exist for the given matrix.".to_string())
+                );
             }
         }
-        
+
         mod matrix_operations_tests {
-            use std::sync::Arc;
             use crate::matrix::Matrix;
             use crate::matrix_utilities::MatrixUtilities;
+            use std::sync::Arc;
 
             #[test]
             fn test_add_matrix() {
@@ -237,7 +248,10 @@ mod tests {
                 let mat = MatrixUtilities::append_multiple(mat, arr);
 
                 let result = MatrixUtilities::add(mat.clone(), mat.clone());
-                assert_eq!(result.unwrap().mat, vec![Arc::from([2, 4, 6]), Arc::from([8, 10, 12])])
+                assert_eq!(
+                    result.unwrap().mat,
+                    vec![Arc::from([2, 4, 6]), Arc::from([8, 10, 12])]
+                )
             }
             #[test]
             fn test_add_matrix_different_shape() {
@@ -260,7 +274,10 @@ mod tests {
                 let mat = MatrixUtilities::append_multiple(mat, arr);
 
                 let result = MatrixUtilities::subtract(mat.clone(), mat.clone());
-                assert_eq!(result.unwrap().mat, vec![Arc::from([0, 0, 0]), Arc::from([0, 0, 0])])
+                assert_eq!(
+                    result.unwrap().mat,
+                    vec![Arc::from([0, 0, 0]), Arc::from([0, 0, 0])]
+                )
             }
             #[test]
             fn test_multiply_by_scalar() {
@@ -268,7 +285,10 @@ mod tests {
                 let arr: &[&[i64]] = &[&[1, 2, 3], &[4, 5, 6]];
                 let mat = MatrixUtilities::append_multiple(mat, arr);
                 let mat = MatrixUtilities::multiply_by_scalar(mat, 2);
-                assert_eq!(mat.mat, vec![Arc::from(&[2, 4, 6][..]), Arc::from(&[8, 10, 12][..])])
+                assert_eq!(
+                    mat.mat,
+                    vec![Arc::from(&[2, 4, 6][..]), Arc::from(&[8, 10, 12][..])]
+                )
             }
             #[test]
             fn test_multiply_by_scalar_with_decimals() {
@@ -281,7 +301,7 @@ mod tests {
 
                 let expected: Vec<Arc<[f64]>> = vec![
                     Arc::from(&[2.5, 5.0, 7.5][..]),
-                    Arc::from(&[10.0, 12.5, 15.0][..])
+                    Arc::from(&[10.0, 12.5, 15.0][..]),
                 ];
                 assert_eq!(mat.mat, expected);
             }
@@ -297,8 +317,10 @@ mod tests {
 
                 let result = MatrixUtilities::multiply(mat, mat2);
                 assert!(result.is_ok());
-                assert_eq!(result.unwrap().mat, vec![Arc::from([21, 8, 10, 25]),
-                                                     Arc::from([42, -18, 2, 40])])
+                assert_eq!(
+                    result.unwrap().mat,
+                    vec![Arc::from([21, 8, 10, 25]), Arc::from([42, -18, 2, 40])]
+                )
             }
             #[test]
             fn test_multiply_matrix_error() {
@@ -324,8 +346,8 @@ mod tests {
                 assert!(mat.is_ok());
 
                 let sub_mat = mat.unwrap();
-                let expected: Vec<Arc<[i64]>>
-                    = vec![Arc::from(&[1, 2][..]), Arc::from(&[4, 5][..])];
+                let expected: Vec<Arc<[i64]>> =
+                    vec![Arc::from(&[1, 2][..]), Arc::from(&[4, 5][..])];
                 assert_eq!(sub_mat.mat, expected);
             }
             #[test]
@@ -377,3 +399,4 @@ mod tests {
         }
     }
 }
+
