@@ -157,11 +157,9 @@ impl<T: Number + num::One> Matrix<T> {
     ///     - An `Ok` variant containing the new sub-matrix as a `Matrix` instance
     ///     - An `Err` with a custom `String` error message if either or
     ///       both provided ranges were out of bounds
-    pub fn sub_matrix(
-        &mut self,
-        row_range: Range<usize>,
-        col_range: Range<usize>,
-    ) -> Result<Matrix<T>, String> {
+    pub fn sub_matrix(&mut self, row_range: Range<usize>, col_range: Range<usize>)
+        -> Result<Matrix<T>, String> {
+        
         if row_range.end > self.rows || col_range.end > self.cols {
             return Err("Range out of bounds!".to_string());
         }
@@ -207,13 +205,13 @@ impl<T: Number + num::One> Matrix<T> {
         }
     }
 
-    /// Generates an N by N identity matrix
+    /// Generates an `n` by `n` identity matrix
     ///
     /// The identity `Matrix` is a matrix that when multiplied by another matrix yields that other
     /// matrix.
     ///
     /// ### Returns
-    /// - An N by N identity `Matrix`
+    /// - An `n` by `n` identity `Matrix`
     pub fn identity(n: usize) -> Matrix<T> {
         let mut output: Vec<Arc<[T]>> = vec![];
         for i in 0..n {
@@ -230,4 +228,3 @@ impl<T: Number + num::One> Matrix<T> {
         }
     }
 }
-
