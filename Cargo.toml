@@ -1,6 +1,6 @@
 [package]
 name = "linalgrs"
-authors = ["Anirudh Konidala", "Aarnav Varanasi"]
+authors = ["Anirudh Konidala", "Aarnav Varanasi", "Mariano Rodriguez"]
 version = "0.3.0"
 edition = "2021"
 description = "A Rust crate with Linear Algebra concept implementations from scratch!"
