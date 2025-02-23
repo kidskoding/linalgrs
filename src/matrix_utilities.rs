@@ -361,7 +361,7 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     }
 
     /// Performs the [Gauss-Jordan Elimination](https://online.stat.psu.edu/statprogram/reviews/matrix-algebra/gauss-jordan-elimination)
-    /// technique on a given `matrix` to solve for its system of equations' missing variables 
+    /// technique on a given `matrix` to solve for the missing variables in a system of equations
     /// (e.g. x, y, and z)
     ///
     /// ### Parameters

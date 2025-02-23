@@ -16,7 +16,7 @@ use std::sync::Arc;
 /// linear transformations, and more
 #[derive(Clone, Debug)]
 pub struct Matrix<T: Number + num::One> {
-    /// Represents a vector of `Arc` atomic reference counting `[i64]` arrays,
+    /// Represents a vector of `Arc` atomic reference counting `[T]` arrays,
     /// where each represents a row in the `Matrix`
     pub mat: Vec<Arc<[T]>>,
 
