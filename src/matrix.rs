@@ -1,6 +1,7 @@
 extern crate num;
 
 use crate::number::Number;
+use std::fmt::Display;
 use std::ops::Range;
 use std::sync::Arc;
 
@@ -13,7 +14,7 @@ use std::sync::Arc;
 ///
 /// Matrices are used to represent and solve systems of linear equations, perform
 /// linear transformations, and more
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Matrix<T: Number + num::One> {
     /// Represents a vector of `Arc` atomic reference counting `[i64]` arrays,
     /// where each represents a row in the `Matrix`
@@ -37,6 +38,27 @@ impl<T: Number + num::One> Default for Matrix<T> {
             rows: 0,
             cols: 0,
         }
+    }
+}
+
+impl<T: Number + num::One> Display for Matrix<T> {
+    /// Writes a `Matrix` as a pretty-printable string
+    ///
+    /// ### Returns
+    /// - Unit result of the write operation
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for i in &self.mat {
+            let mut curr_line = String::new();
+            curr_line.push('|');
+            for num in i.into_iter() {
+                curr_line.push(' ');
+                curr_line.push_str(&format!("{}", num));
+            }
+            curr_line.push_str(" |");
+            writeln!(f, "{}", curr_line)?;
+        }
+
+        Ok(())
     }
 }
 
@@ -157,9 +179,11 @@ impl<T: Number + num::One> Matrix<T> {
     ///     - An `Ok` variant containing the new sub-matrix as a `Matrix` instance
     ///     - An `Err` with a custom `String` error message if either or
     ///       both provided ranges were out of bounds
-    pub fn sub_matrix(&mut self, row_range: Range<usize>, col_range: Range<usize>)
-        -> Result<Matrix<T>, String> {
-        
+    pub fn sub_matrix(
+        &mut self,
+        row_range: Range<usize>,
+        col_range: Range<usize>,
+    ) -> Result<Matrix<T>, String> {
         if row_range.end > self.rows || col_range.end > self.cols {
             return Err("Range out of bounds!".to_string());
         }
