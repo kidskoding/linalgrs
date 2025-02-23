@@ -64,6 +64,18 @@ mod tests {
             assert_eq!(eye.rows, expected.rows);
         }
 
+        #[test]
+        fn test_dbg_derive() {
+            let mat = Matrix::<i32>::identity(3usize);
+            dbg!(mat);
+        }
+
+        #[test]
+        fn test_display_derive() {
+            let mat = Matrix::<i32>::identity(3usize);
+            println!("{}", mat);
+        }
+
         mod determinant_tests {
             use crate::matrix::Matrix;
             use std::sync::Arc;
