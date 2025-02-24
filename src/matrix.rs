@@ -228,27 +228,4 @@ impl<T: Number + num::One> Matrix<T> {
             cols: self.rows,
         }
     }
-
-    /// Generates an `n` by `n` identity matrix
-    ///
-    /// The identity `Matrix` is a matrix that when multiplied by another matrix yields that other
-    /// matrix.
-    ///
-    /// ### Returns
-    /// - An `n` by `n` identity `Matrix`
-    pub fn identity(n: usize) -> Matrix<T> {
-        let mut output: Vec<Arc<[T]>> = vec![];
-        for i in 0..n {
-            let mut zeroes = vec![T::default(); n];
-            zeroes[i] = T::one();
-            let arr = &zeroes[..];
-            output.push(Arc::from(arr));
-        }
-
-        Matrix {
-            mat: output,
-            rows: n,
-            cols: n,
-        }
-    }
 }

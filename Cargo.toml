@@ -8,3 +8,4 @@ license = "MIT"
 
 [dependencies]
 num = "0.4.3"
+float-cmp = "0.10.0"

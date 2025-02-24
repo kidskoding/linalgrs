@@ -16,7 +16,7 @@ pub struct MatrixUtilities<T: Number> {
 }
 
 impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
-    /// Appends a `row` to a given `Matrix`, returning a updated `Matrix` instance with the newly
+    /// Appends a `row` to a given `Matrix`, returning an updated `Matrix` instance with the newly
     /// appended row
     ///
     /// ### Parameters
@@ -34,7 +34,7 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
         matrix
     }
 
-    /// Appends multiple `rows` to a given `Matrix`, returning a updated `Matrix` instance
+    /// Appends multiple `rows` to a given `Matrix`, returning an updated `Matrix` instance
     /// with the newly appended rows
     ///
     /// ### Parameters
@@ -100,7 +100,7 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     }
     
     /// Computes the reduced row echelon form (RREF) for the given `matrix` and returns the result
-    /// as a updated `Matrix` instance
+    /// as an updated `Matrix` instance
     /// 
     /// ### Parameters
     /// - `matrix`: The `Matrix` needed to compute the reduced row echelon form
@@ -242,7 +242,7 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     ///
     /// ### Parameters
     /// - `a`: A `Matrix` instance that will be one of the operands
-    /// - 'b': Another 'Matrix' instance that will be the second operand to subtract from
+    /// - `b`: Another 'Matrix' instance that will be the second operand to subtract from
     ///
     /// ### Returns
     /// - An `Result` based on whether the two matrices were added 
@@ -394,5 +394,97 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
         }
 
         Ok(pivot_vars)
+    }
+
+
+    /// Generates an `n` by `n` identity matrix
+    ///
+    /// The identity `Matrix` is a matrix that when multiplied by another matrix yields that other
+    /// matrix.
+    ///
+    /// ### Returns
+    /// - An `n` by `n` identity `Matrix`
+    pub fn identity(n: usize) -> Matrix<T> {
+        let mut output: Vec<Arc<[T]>> = vec![];
+        for i in 0..n {
+            let mut zeroes = vec![T::default(); n];
+            zeroes[i] = T::one();
+            let arr = &zeroes[..];
+            output.push(Arc::from(arr));
+        }
+
+        Matrix {
+            mat: output,
+            rows: n,
+            cols: n,
+        }
+    }
+    
+    /// Performs the inverse of a given matrix and returns it as a `Matrix` instance
+    /// 
+    /// ### Parameters
+    /// - `matrix`: The `Matrix` to perform the inverse on
+    /// 
+    /// ### Returns
+    /// - A `Result` type based on whether the given `matrix` is invertible
+    ///     - An `Err` consisting of a `String` if the given `matrix` is not invertible
+    ///     - An `Ok` consisting of the inverse matrix, if the given `matrix` is invertible
+    pub fn inverse(matrix: Matrix<T>) -> Result<Matrix<T>, String> {
+        let rows = matrix.rows;
+        let cols = matrix.cols;
+        
+        if rows != cols {
+            return Err("Matrix must be square to find its inverse.".to_string())
+        }
+        
+        let n = rows;
+        let identity_matrix = MatrixUtilities::identity(n);
+        let mut augmented = vec![];
+        for i in 0..n {
+            let mut row: Vec<T> = matrix.mat[i].to_vec();
+            row.extend_from_slice(&identity_matrix.mat[i]);
+            augmented.push(Arc::from(row));
+        }
+        
+        let mut augmented_matrix = Matrix {
+            mat: augmented,
+            rows: n,
+            cols: 2 * n,
+        };
+
+        for i in 0..n {
+            if augmented_matrix.mat[i][i] == T::default() {
+                return Err("Matrix is singular and cannot be inverted".to_string());
+            }
+            
+            let pivot = augmented_matrix.mat[i][i];
+            let row = Arc::make_mut(&mut augmented_matrix.mat[i]);
+            for j in 0..augmented_matrix.cols {
+                row[j] = row[j] / pivot;
+            }
+
+            for k in 0..n {
+                if k != i {
+                    let factor = augmented_matrix.mat[k][i];
+                    let row_i = augmented_matrix.mat[i].clone();
+                    let row_k = Arc::make_mut(&mut augmented_matrix.mat[k]);
+                    
+                    for j in 0..augmented_matrix.cols {
+                        row_k[j] -= factor * row_i[j];
+                    }
+                }
+            }
+        }
+
+        let mut inverse_mat = vec![];
+        for i in 0..n {
+            inverse_mat.push(Arc::from(augmented_matrix.mat[i][n..].to_vec()));
+        }
+
+        Ok(Matrix {
+            mat: inverse_mat,
+            rows: n,
+            cols: n,
+        })
     }
 }
