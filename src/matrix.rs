@@ -15,7 +15,7 @@ use std::sync::Arc;
 /// Matrices are used to represent and solve systems of linear equations, perform
 /// linear transformations, and more
 #[derive(Clone, Debug)]
-pub struct Matrix<T: Number + num::One> {
+pub struct Matrix<T: Number + num::One + PartialEq> {
     /// Represents a vector of `Arc` atomic reference counting `[T]` arrays,
     /// where each represents a row in the `Matrix`
     pub mat: Vec<Arc<[T]>>,
@@ -25,6 +25,41 @@ pub struct Matrix<T: Number + num::One> {
 
     /// Stores the number of columns in the matrix
     pub cols: usize,
+}
+
+impl<T: PartialEq + Number + num::One> PartialEq for Matrix<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.rows == other.rows && self.cols == other.cols && self.mat == other.mat
+    }
+}
+
+/// A macro to create a `Matrix` from a 2D array.
+///
+/// This macro allows you to create a `Matrix` instance by specifying its elements
+/// in a 2D array format. Each inner array represents a row in the matrix.
+///
+/// ### Parameters
+/// - `[$([$elem:expr),* $(,)?]),* $(,)?`: A 2D array where each inner array represents a row.
+///
+/// ### Returns
+/// - A `Matrix` instance containing the specified elements.
+#[macro_export]
+macro_rules! matrix {
+    ($([$($elem:expr),* $(,)?]),* $(,)?) => {
+        {
+            let mut rows = Vec::new();
+            $(
+                let row = vec![$($elem),*];
+                rows.push(Arc::from(row.as_slice()));
+            )*
+            
+            Matrix {
+                mat: rows.clone(),
+                rows: rows.len(),
+                cols: if rows.len() > 0 { rows[0].len() } else { 0 },
+            }
+        }
+    };
 }
 
 impl<T: Number + num::One> Default for Matrix<T> {

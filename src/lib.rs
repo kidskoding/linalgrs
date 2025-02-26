@@ -8,6 +8,7 @@ mod tests {
         use crate::matrix::Matrix;
         use crate::matrix_utilities::MatrixUtilities;
         use std::sync::Arc;
+        use crate::matrix;
 
         #[test]
         fn test_matrix() {
@@ -19,11 +20,19 @@ mod tests {
             assert_eq!(mat.mat, expected);
         }
         #[test]
+        fn test_matrix_macro() {
+            let mat = matrix!([1, 2, 3, 4], [5, 6, 7, 8]);
+            let mat2 = Matrix::default();
+            let mat_expected 
+                = MatrixUtilities::append_multiple(mat2, &[&[1, 2, 3, 4], &[5, 6, 7, 8]]);
+            assert_eq!(mat, mat_expected);
+        }
+        #[test]
         fn test_shape() {
             let mut mat = Matrix::default();
             let arr = [1, 2, 3];
             mat = MatrixUtilities::append(mat, &arr);
-            assert_eq!(mat.shape(), (1, 3))
+            assert_eq!(mat.shape(), (1, 3));
         }
         #[test]
         fn test_transpose() {
