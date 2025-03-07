@@ -1,11 +1,11 @@
 extern crate num;
 
+use crate::matrix::Matrix;
+use crate::number::Number;
 use std::collections::HashMap;
 use std::marker::PhantomData;
 use std::ops::Neg;
 use std::sync::Arc;
-use crate::matrix::Matrix;
-use crate::number::Number;
 
 /// `MatrixUtilities` is a utility struct designed to perform
 ///  various algorithms or operations for `Matrix` instances, including
@@ -24,7 +24,7 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     /// - `row`: An `&[i64]` slice
     ///
     /// ### Returns
-    /// - An updated `Matrix` object that adds the given `row` 
+    /// - An updated `Matrix` object that adds the given `row`
     ///   to the given `Matrix`
     pub fn append(mut matrix: Matrix<T>, row: &[T]) -> Matrix<T> {
         matrix.mat.push(Arc::from(row));
@@ -55,19 +55,19 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
 
         matrix
     }
-    
-    /// Computes the row echelon form for the given `matrix` and returns the result as an updated 
+
+    /// Computes the row echelon form for the given `matrix` and returns the result as an updated
     /// `Matrix` instance
-    /// 
+    ///
     /// ### Parameters
     /// - `matrix`: The `Matrix` needed to compute the row echelon form
-    /// 
+    ///
     /// ### Returns
     /// - A `Matrix` instance containing the given `matrix` in row echelon form
     pub fn row_echelon_form(mut matrix: Matrix<T>) -> Matrix<T> {
         let rows = matrix.rows;
         let cols = matrix.cols;
-        
+
         for i in 0..rows {
             let pivot = matrix.mat[i][i];
             if pivot != T::default() {
@@ -79,14 +79,14 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
                     }
                 }
             }
-            
+
             let pivot_row = Arc::clone(&matrix.mat[i]);
-            
+
             for j in (i + 1)..rows {
                 let scale_factor = matrix.mat[j][i];
                 let (_, lower) = matrix.mat.split_at_mut(j);
                 let row_j = Arc::make_mut(&mut lower[0]);
-                
+
                 for c in 0..cols {
                     row_j[c] = row_j[c] - scale_factor * pivot_row[c];
                     if row_j[c] == -T::default() {
@@ -95,22 +95,22 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
                 }
             }
         }
-        
+
         matrix
     }
-    
+
     /// Computes the reduced row echelon form (RREF) for the given `matrix` and returns the result
     /// as an updated `Matrix` instance
-    /// 
+    ///
     /// ### Parameters
     /// - `matrix`: The `Matrix` needed to compute the reduced row echelon form
-    /// 
+    ///
     /// ### Returns
     /// - A `Matrix` instance containing the given `matrix` in reduced row echelon form
     pub fn rref(mut matrix: Matrix<T>) -> Matrix<T> {
         let rows = matrix.rows;
         let cols = matrix.cols;
-        
+
         for i in 0..rows {
             let pivot = matrix.mat[i][i];
             if pivot != T::default() {
@@ -119,86 +119,86 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
                     row[c] = row[c] / pivot;
                 }
             }
-            
+
             let pivot_row = Arc::clone(&matrix.mat[i]);
-            
+
             for j in (i + 1)..rows {
                 let factor = matrix.mat[j][i];
                 let pivot_row_clone = Arc::clone(&pivot_row);
                 let (_, lower) = matrix.mat.split_at_mut(j);
                 let row_j = Arc::make_mut(&mut lower[0]);
-                
+
                 for c in 0..cols {
                     row_j[c] = row_j[c] - factor * pivot_row_clone[c];
                 }
             }
         }
-        
+
         for i in (0..rows).rev() {
             for j in (0..i).rev() {
                 let factor = matrix.mat[j][i];
                 let pivot_row_clone = Arc::clone(&matrix.mat[i]);
                 let (_, lower) = matrix.mat.split_at_mut(j);
                 let row_j = Arc::make_mut(&mut lower[0]);
-                
+
                 for c in 0..cols {
                     row_j[c] = row_j[c] - factor * pivot_row_clone[c];
                 }
             }
         }
-        
+
         matrix
     }
-    
+
     /// Performs the [Gaussian Elimination](https://en.wikipedia.org/wiki/Gaussian_elimination)
-    /// technique on a given `matrix` to solve for its system of equations' missing variables 
+    /// technique on a given `matrix` to solve for its system of equations' missing variables
     /// (e.g. x, y, and z)
-    /// 
+    ///
     /// ### Parameters
     /// - `matrix`: The `Matrix` to perform Gaussian Elimination on
-    /// 
+    ///
     /// ### Returns
     /// - A `Result` based on whether the matrix had a solution
     ///     - An `Err` with an enclosed `String` representing the error state of solving the `matrix`
     ///       using Gaussian Elimination (i.e. no solution or infinitely many solutions)
-    ///     - An `Ok` enclosed with a `HashMap` containing each variable name 
+    ///     - An `Ok` enclosed with a `HashMap` containing each variable name
     ///       mapped to a value with its solution
     pub fn gaussian_elimination(mut matrix: Matrix<T>) -> Result<HashMap<char, T>, String> {
         matrix = MatrixUtilities::row_echelon_form(matrix);
         let mut pivot_vars = HashMap::new();
         let num_rows = matrix.rows;
         let num_cols = matrix.cols;
-        
+
         let mut solutions = vec![T::default(); num_rows];
-        
+
         for i in (0..num_rows).rev() {
             let mut sum = T::default();
-            
+
             for j in (i + 1)..num_cols - 1 {
                 sum = sum + matrix.mat[i][j] * solutions[j];
             }
-            
+
             solutions[i] = matrix.mat[i][num_cols - 1] - sum;
             solutions[i] = solutions[i] / matrix.mat[i][i];
-            
+
             pivot_vars.insert(('a' as u8 + i as u8) as char, solutions[i]);
         }
-        
+
         for i in 0..num_rows {
-            if matrix.mat[i].iter().all(|&x| x == T::default()) 
-                && matrix.mat[i][num_cols - 1] == T::default() {
-                
+            if matrix.mat[i].iter().all(|&x| x == T::default())
+                && matrix.mat[i][num_cols - 1] == T::default()
+            {
                 return Err("Infinitely many solutions exist for the given matrix.".to_string());
             }
         }
-        
+
         for i in 0..num_rows {
             let pivot = matrix.mat[i][i];
             if pivot == T::default() && matrix.mat[i][num_cols - 1] != T::default() {
                 return Err("No solution exists for the given matrix.".to_string());
             }
         }
-        
+
         Ok(pivot_vars)
     }
 
@@ -210,16 +210,17 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     /// - 'b': Another 'Matrix' operand addend
     ///
     /// ### Returns
-    /// - A `Result` based on whether the two matrices were added or not 
+    /// - A `Result` based on whether the two matrices were added or not
     ///     - An `Err` if the two matrices are different shapes
     ///     - An `Ok` wrapped inside a `Matrix` instance that represents the sum
     ///       of the two matrices `a` and `b`
     pub fn add(mut a: Matrix<T>, mut b: Matrix<T>) -> Result<Matrix<T>, String> {
         if a.shape() != b.shape() {
-            return Err("Cannot add the two matrices because 
-                their shapes are unequal!".to_string())
+            return Err("Cannot add the two matrices because
+                their shapes are unequal!"
+                .to_string());
         }
-       
+
         let mut result = Vec::new();
 
         for r in 0..a.rows {
@@ -245,16 +246,17 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     /// - `b`: Another 'Matrix' instance that will be the second operand to subtract from
     ///
     /// ### Returns
-    /// - An `Result` based on whether the two matrices were added 
+    /// - An `Result` based on whether the two matrices were added
     ///   - An `Err` value when the two matrices have different shapes
     ///   - An `Ok` value wrapped with a `Matrix` instance that represents the difference
     ///     of the two matrices `a` and `b`
     pub fn subtract(mut a: Matrix<T>, mut b: Matrix<T>) -> Result<Matrix<T>, String> {
         if a.shape() != b.shape() {
-            return Err("Cannot add the two matrices because 
-                their shapes are unequal!".to_string())
+            return Err("Cannot add the two matrices because
+                their shapes are unequal!"
+                .to_string());
         }
-       
+
         let mut result = Vec::new();
 
         for r in 0..a.rows {
@@ -287,7 +289,7 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
                 *elem *= constant;
             }
         }
-        
+
         matrix
     }
 
@@ -303,10 +305,11 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     ///     - An `Err` if the columns of `Matrix` a does not equal the rows of `Matrix` b
     ///     - An `Ok` wrapped inside a `Matrix` object that represents the product between two
     ///       matrices
-    pub fn multiply(a: Matrix<T>, b: Matrix<T>) -> Result<Matrix<T>, String> {    
+    pub fn multiply(a: Matrix<T>, b: Matrix<T>) -> Result<Matrix<T>, String> {
         if a.cols != b.rows {
-            return Err("The columns of matrix a do not 
-                equal the rows of matrix b!".to_string());
+            return Err("The columns of matrix a do not
+                equal the rows of matrix b!"
+                .to_string());
         }
 
         let mut new_mat = vec![];
@@ -330,26 +333,28 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     }
 
     /// Gets the dot product of two matrices `a` and `b`
-    /// 
+    ///
     /// ### Parameters
     /// - `a`: One of the `Matrix` instance operands
     /// - `b`: Another `Matrix` instance operand
     ///
     /// ### Returns
-    /// - A `Result` based on whether there is a 
+    /// - A `Result` based on whether there is a
     ///   valid dot product for matrices `a` and `b`
-    ///     - An `Err` value if the columns of `Matrix` a` do not equal the 
+    ///     - An `Err` value if the columns of `Matrix` a` do not equal the
     ///       rows of `Matrix` b`
-    ///     - An `Ok` wrapped in a T generic value, representing the 
+    ///     - An `Ok` wrapped in a T generic value, representing the
     ///       dot product
     pub fn dot(a: Matrix<T>, b: Matrix<T>) -> Result<T, String> {
         if a.cols != b.rows {
             return Err("Cannot get the dot product: The number of columns in A \
-                must match the number of rows in B.".to_string());
+                must match the number of rows in B."
+                .to_string());
         }
         if !(a.rows == 1 && b.cols == 1) {
-            return Err("Dot product is only valid for a 
-                row vector and a column vector.".to_string());
+            return Err("Dot product is only valid for a
+                row vector and a column vector."
+                .to_string());
         }
 
         let mut sum = T::default();
@@ -371,7 +376,7 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     /// - A `Result` based on whether the matrix had a solution
     ///     - An `Err` with an enclosed `String` representing the error state of solving the `matrix`
     ///       using Gaussian Elimination (i.e. no solution or infinitely many solutions)
-    ///     - An `Ok` enclosed with a `HashMap` containing each variable name 
+    ///     - An `Ok` enclosed with a `HashMap` containing each variable name
     ///       mapped to a value with its solution
     pub fn gauss_jordan_elimination(mut matrix: Matrix<T>) -> Result<HashMap<char, T>, String> {
         matrix = MatrixUtilities::rref(matrix);
@@ -381,7 +386,10 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
             let pivot = matrix.mat[i][i];
 
             if pivot != T::default() {
-                pivot_vars.insert(('a' as u8 + i as u8) as char, matrix.mat[i][matrix.cols - 1]);
+                pivot_vars.insert(
+                    ('a' as u8 + i as u8) as char,
+                    matrix.mat[i][matrix.cols - 1],
+                );
             } else if matrix.mat[i][matrix.cols - 1] != T::default() {
                 return Err("No solution exists for the given matrix.".to_string());
             }
@@ -395,7 +403,6 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
 
         Ok(pivot_vars)
     }
-
 
     /// Generates an `n` by `n` identity matrix
     ///
@@ -419,12 +426,12 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
             cols: n,
         }
     }
-    
+
     /// Performs the inverse of a given matrix and returns it as a `Matrix` instance
-    /// 
+    ///
     /// ### Parameters
     /// - `matrix`: The `Matrix` to perform the inverse on
-    /// 
+    ///
     /// ### Returns
     /// - A `Result` type based on whether the given `matrix` is invertible
     ///     - An `Err` consisting of a `String` if the given `matrix` is not invertible
@@ -432,11 +439,11 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     pub fn inverse(matrix: Matrix<T>) -> Result<Matrix<T>, String> {
         let rows = matrix.rows;
         let cols = matrix.cols;
-        
+
         if rows != cols {
-            return Err("Matrix must be square to find its inverse.".to_string())
+            return Err("Matrix must be square to find its inverse.".to_string());
         }
-        
+
         let n = rows;
         let identity_matrix = MatrixUtilities::identity(n);
         let mut augmented = vec![];
@@ -445,7 +452,7 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
             row.extend_from_slice(&identity_matrix.mat[i]);
             augmented.push(Arc::from(row));
         }
-        
+
         let mut augmented_matrix = Matrix {
             mat: augmented,
             rows: n,
@@ -456,7 +463,7 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
             if augmented_matrix.mat[i][i] == T::default() {
                 return Err("Matrix is singular and cannot be inverted".to_string());
             }
-            
+
             let pivot = augmented_matrix.mat[i][i];
             let row = Arc::make_mut(&mut augmented_matrix.mat[i]);
             for j in 0..augmented_matrix.cols {
@@ -468,7 +475,7 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
                     let factor = augmented_matrix.mat[k][i];
                     let row_i = augmented_matrix.mat[i].clone();
                     let row_k = Arc::make_mut(&mut augmented_matrix.mat[k]);
-                    
+
                     for j in 0..augmented_matrix.cols {
                         row_k[j] -= factor * row_i[j];
                     }
@@ -487,18 +494,20 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
             cols: n,
         })
     }
-    
+
+    /// Returns the LU Decomposition of a `Matrix` in the form of a tuple
+    ///
     /// [LU Decomposition](https://en.wikipedia.org/wiki/LU_decomposition), or factorization,
     /// is a technique used in Linear Algebra to factor a matrix as the product of a lower
-    /// triangular matrix and an upper triangular matrix. Typically viewed as that of the 
+    /// triangular matrix and an upper triangular matrix. Typically viewed as that of the
     /// matrix form of Gaussian Elimination
-    /// 
+    ///
     /// ### Parameters
     /// - `matrix` - The matrix to perform LU decomposition on
-    /// 
+    ///
     /// ### Returns
     /// - A `Result` type based on whether or not the `matrix` is invertible
-    ///     - Returns an Ok form containing a `Matrix` tuple containing the 
+    ///     - Returns an Ok form containing a `Matrix` tuple containing the
     ///       `l` and `u` decomposed matrices respectively
     ///     - Returns an error if the `matrix` is not invertible
     pub fn lu_decomposition(matrix: Matrix<T>) -> Result<(Matrix<T>, Matrix<T>), String> {
