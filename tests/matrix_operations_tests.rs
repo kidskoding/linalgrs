@@ -2,6 +2,7 @@ mod matrix_operations_tests {
     use linalgrs::matrix::Matrix;
     use linalgrs::matrix_utilities::MatrixUtilities;
     use std::sync::Arc;
+    use linalgrs::matrix;
 
     #[test]
     fn test_add_matrix() {
@@ -157,5 +158,52 @@ mod matrix_operations_tests {
         assert_eq!(pivot_vars.get(&'a'), Some(&2.0));
         assert_eq!(pivot_vars.get(&'b'), Some(&3.0));
         assert_eq!(pivot_vars.get(&'c'), Some(&-1.0));
+    }
+
+    #[test]
+    fn test_lu_decomposition() {
+        let matrix = Matrix {
+            mat: vec![
+                Arc::from([4.0, 3.0].as_slice()),
+                Arc::from([6.0, 3.0].as_slice()),
+            ],
+            rows: 2,
+            cols: 2,
+        };
+
+        let (l, u) = MatrixUtilities::lu_decomposition(matrix).unwrap();
+
+        let expected_l = Matrix {
+            mat: vec![
+                Arc::from([1.0, 0.0].as_slice()),
+                Arc::from([1.5, 1.0].as_slice()),
+            ],
+            rows: 2,
+            cols: 2,
+        };
+
+        let expected_u = Matrix {
+            mat: vec![
+                Arc::from([4.0, 3.0].as_slice()),
+                Arc::from([0.0, -1.5].as_slice()),
+            ],
+            rows: 2,
+            cols: 2,
+        };
+
+        assert_eq!(l, expected_l);
+        assert_eq!(u, expected_u);
+    }
+
+    #[test]
+    fn test_lu_decomposition_non_square_matrix() {
+        let matrix: Matrix<i32> = matrix!([2, 3, 1], [4, 7, 3]);
+
+        let result = MatrixUtilities::lu_decomposition(matrix);
+        assert!(result.is_err(), "LU decomposition should fail for a non-square matrix.");
+        assert_eq!(
+            result.unwrap_err(),
+            "Matrix must be square for LU decomposition.".to_string()
+        );
     }
 }

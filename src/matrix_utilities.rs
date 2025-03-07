@@ -487,4 +487,61 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
             cols: n,
         })
     }
+    
+    /// [LU Decomposition](https://en.wikipedia.org/wiki/LU_decomposition), or factorization,
+    /// is a technique used in Linear Algebra to factor a matrix as the product of a lower
+    /// triangular matrix and an upper triangular matrix. Typically viewed as that of the 
+    /// matrix form of Gaussian Elimination
+    /// 
+    /// ### Parameters
+    /// - `matrix` - The matrix to perform LU decomposition on
+    /// 
+    /// ### Returns
+    /// - A `Result` type based on whether or not the `matrix` is invertible
+    ///     - Returns an Ok form with the LU decomposed matrix if the `matrix` is invertible
+    ///     - Returns an error if the `matrix` is not invertible
+    pub fn lu_decomposition(matrix: Matrix<T>) -> Result<(Matrix<T>, Matrix<T>), String> {
+        let n = matrix.rows;
+        if n != matrix.cols {
+            return Err("Matrix must be square for LU decomposition.".to_string());
+        }
+
+        let mut l = Matrix {
+            mat: vec![Arc::from(vec![T::default(); n].into_boxed_slice()); n],
+            rows: n,
+            cols: n,
+        };
+        let mut u = Matrix {
+            mat: vec![Arc::from(vec![T::default(); n].into_boxed_slice()); n],
+            rows: n,
+            cols: n,
+        };
+
+        for i in 0..n {
+            for j in i..n {
+                let mut sum = matrix.mat[i][j];
+                for k in 0..i {
+                    sum -= l.mat[i][k] * u.mat[k][j];
+                }
+                let row = Arc::make_mut(&mut u.mat[i]);
+                row[j] = sum;
+            }
+
+            for j in i..n {
+                if i == j {
+                    let row = Arc::make_mut(&mut l.mat[i]);
+                    row[i] = T::one();
+                } else {
+                    let mut sum = matrix.mat[j][i];
+                    for k in 0..i {
+                        sum -= l.mat[j][k] * u.mat[k][i];
+                    }
+                    let row = Arc::make_mut(&mut l.mat[j]);
+                    row[i] = sum / u.mat[i][i];
+                }
+            }
+        }
+
+        Ok((l, u))
+    }
 }
