@@ -498,7 +498,8 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     /// 
     /// ### Returns
     /// - A `Result` type based on whether or not the `matrix` is invertible
-    ///     - Returns an Ok form with the LU decomposed matrix if the `matrix` is invertible
+    ///     - Returns an Ok form containing a `Matrix` tuple containing the 
+    ///       `l` and `u` decomposed matrices respectively
     ///     - Returns an error if the `matrix` is not invertible
     pub fn lu_decomposition(matrix: Matrix<T>) -> Result<(Matrix<T>, Matrix<T>), String> {
         let n = matrix.rows;
