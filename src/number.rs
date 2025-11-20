@@ -1,3 +1,5 @@
+extern crate num;
+
 use std::fmt::{Debug, Display};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
@@ -16,6 +18,7 @@ pub trait Number:
     + Debug
     + Display
     + PartialEq
+    + num::One
 {
 }
 

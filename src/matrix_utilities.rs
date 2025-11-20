@@ -15,7 +15,7 @@ pub struct MatrixUtilities<T: Number> {
     _marker: PhantomData<T>,
 }
 
-impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
+impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     /// Appends a `row` to a given `Matrix`, returning an updated `Matrix` instance with the newly
     /// appended row
     ///
@@ -214,8 +214,8 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     ///     - An `Err` if the two matrices are different shapes
     ///     - An `Ok` wrapped inside a `Matrix` instance that represents the sum
     ///       of the two matrices `a` and `b`
-    pub fn add(mut a: Matrix<T>, mut b: Matrix<T>) -> Result<Matrix<T>, String> {
-        if a.shape() != b.shape() {
+    pub fn add(a: &Matrix<T>, b: &Matrix<T>) -> Result<Matrix<T>, String> {
+        if (a.rows, a.cols) != (b.rows, b.cols) {
             return Err("Cannot add the two matrices because
                 their shapes are unequal!"
                 .to_string());
@@ -250,8 +250,8 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     ///   - An `Err` value when the two matrices have different shapes
     ///   - An `Ok` value wrapped with a `Matrix` instance that represents the difference
     ///     of the two matrices `a` and `b`
-    pub fn subtract(mut a: Matrix<T>, mut b: Matrix<T>) -> Result<Matrix<T>, String> {
-        if a.shape() != b.shape() {
+    pub fn subtract(a: &Matrix<T>, b: &Matrix<T>) -> Result<Matrix<T>, String> {
+        if (a.rows, a.cols) != (b.rows, b.cols) {
             return Err("Cannot add the two matrices because
                 their shapes are unequal!"
                 .to_string());
@@ -305,7 +305,7 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     ///     - An `Err` if the columns of `Matrix` a does not equal the rows of `Matrix` b
     ///     - An `Ok` wrapped inside a `Matrix` object that represents the product between two
     ///       matrices
-    pub fn multiply(a: Matrix<T>, b: Matrix<T>) -> Result<Matrix<T>, String> {
+    pub fn multiply(a: &Matrix<T>, b: &Matrix<T>) -> Result<Matrix<T>, String> {
         if a.cols != b.rows {
             return Err("The columns of matrix a do not
                 equal the rows of matrix b!"
@@ -345,7 +345,7 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     ///       rows of `Matrix` b`
     ///     - An `Ok` wrapped in a T generic value, representing the
     ///       dot product
-    pub fn dot(a: Matrix<T>, b: Matrix<T>) -> Result<T, String> {
+    pub fn dot(a: &Matrix<T>, b: &Matrix<T>) -> Result<T, String> {
         if a.cols != b.rows {
             return Err("Cannot get the dot product: The number of columns in A \
                 must match the number of rows in B."
@@ -424,6 +424,37 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
             mat: output,
             rows: n,
             cols: n,
+        }
+    }
+
+    /// Computes the transpose of this `Matrix`
+    ///
+    /// The transpose of a `Matrix` is the resulting matrix where the columns are
+    /// formed from the corresponding rows of the original matrix
+    ///
+    /// ### Parameters
+    /// - `x` - An existing `Matrix` to transpose
+    /// 
+    /// ### Returns
+    /// - A `Matrix` instance containing the transposed matrix
+    pub fn transpose(x: &Matrix<T>) -> Matrix<T> {
+        let mut transposed_mat: Vec<Vec<T>> = vec![vec![T::default(); x.rows]; x.cols];
+
+        for i in 0..x.rows {
+            for j in 0..x.cols {
+                transposed_mat[j][i] = x.mat[i][j];
+            }
+        }
+
+        let transposed_mat: Vec<Arc<[T]>> = transposed_mat
+            .into_iter()
+            .map(|row| Arc::from(row.into_boxed_slice()))
+            .collect();
+
+        Matrix {
+            mat: transposed_mat,
+            rows: x.cols,
+            cols: x.rows,
         }
     }
 
@@ -510,7 +541,7 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
     ///     - Returns an Ok form containing a `Matrix` tuple containing the
     ///       `l` and `u` decomposed matrices respectively
     ///     - Returns an error if the `matrix` is not invertible
-    pub fn lu_decomposition(matrix: Matrix<T>) -> Result<(Matrix<T>, Matrix<T>), String> {
+    pub fn lu_decomposition(matrix: &Matrix<T>) -> Result<(Matrix<T>, Matrix<T>), String> {
         let n = matrix.rows;
         if n != matrix.cols {
             return Err("Matrix must be square for LU decomposition.".to_string());
@@ -530,9 +561,11 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
         for i in 0..n {
             for j in i..n {
                 let mut sum = matrix.mat[i][j];
+                
                 for k in 0..i {
                     sum -= l.mat[i][k] * u.mat[k][j];
                 }
+
                 let row = Arc::make_mut(&mut u.mat[i]);
                 row[j] = sum;
             }
@@ -543,9 +576,11 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
                     row[i] = T::one();
                 } else {
                     let mut sum = matrix.mat[j][i];
+
                     for k in 0..i {
                         sum -= l.mat[j][k] * u.mat[k][i];
                     }
+
                     let row = Arc::make_mut(&mut l.mat[j]);
                     row[i] = sum / u.mat[i][i];
                 }
@@ -553,5 +588,113 @@ impl<T: Number + Neg<Output = T> + num::One> MatrixUtilities<T> {
         }
 
         Ok((l, u))
+    }
+
+    /// Compute the determinant of this `Matrix`
+    ///
+    /// - In a `Matrix` with a shape of `(1, 1)`, a `Matrix`'s determinant is
+    /// simply that number itself
+    ///
+    /// - In a `Matrix` with a shape of `(2, 2)`, a `Matrix`'s determinant is
+    /// equal to `ad - bc`, which is the difference
+    /// between the left diagonal product and the right diagonal product
+    ///
+    /// - Any other `Matrix` bigger than a `(2, 2)` (i.e. `(3, 3)`, `(4, 4)`, etc.) utilizes the
+    /// [Cofactor/Laplace Expansion](https://en.wikipedia.org/wiki/Laplace_expansion) approach.
+    /// The [Cofactor/Laplace Expansion](https://en.wikipedia.org/wiki/Laplace_expansion) approach involves expanding
+    /// the determinant along a row or column breaking it down into smaller sub-matrices until reaching
+    /// 2x2 matrices, where the determinant can directly be calculated using the formula `ad - bc`
+    ///
+    /// ### Parameters
+    /// - `x` - The given matrix to compute the determinant for
+    /// 
+    /// ### Returns
+    /// - The determinant value of `x` wrapped in an (optional)`Option` 
+    ///     - A `None` if the `Matrix`'s determinant could not be calculated 
+    ///       (unequal rows and columns)
+    ///     - A `Some` with the determinant value, if this `Matrix`'s
+    ///       shape is `(2, 2)` - 2 rows and 2 columns
+    pub fn determinant(x: &mut Matrix<T>) -> Option<T> {
+        let (rows, cols) = x.shape();
+        if rows != cols {
+            return None;
+        }
+
+        match rows {
+            1 => Some(x.mat[0][0]),
+            2 => {
+                let ad = x.mat[0][0] * x.mat[1][1];
+                let bc = x.mat[0][1] * x.mat[1][0];
+
+                Some(ad - bc)
+            }
+            _ => Some(MatrixUtilities::cofactor_expansion(x)),
+        }
+    }
+    
+    /// Compute the [Cofactor/Laplace Expansion](https://en.wikipedia.org/wiki/Laplace_expansion) of this `Matrix`
+    /// 
+    /// # Note
+    /// 
+    /// This function is not meant to be called on its own!!! 
+    /// The `determinant` function written in `MatrixUtilities` already calls this function!
+    /// Call that one instead. This one is just there as reference!!
+    /// 
+    /// The [Cofactor/Laplace Expansion](https://en.wikipedia.org/wiki/Laplace_expansion) is a technique used to 
+    /// calculate the determinant of matrices that are much bigger than a `(2, 2)` 
+    /// 
+    /// This approach involves expanding the determinant along a row or column 
+    /// breaking it down into smaller sub-matrices until reaching
+    /// 2x2 matrices, where the determinant can directly be calculated using the formula `ad - bc`
+    ///
+    /// ### Parameters
+    /// - `x` - The given matrix to compute cofactor expansion upon
+    /// 
+    /// ### Returns 
+    /// - The determinant value of `x` as a generic type `T`
+    pub(crate) fn cofactor_expansion(x: &mut Matrix<T>) -> T {
+        let (_, cols) = x.shape();
+        let mut det = T::default();
+
+        for col in 0..cols {
+            let mut sub_matrix = MatrixUtilities::create_cofactor_expansion_submatrix(x, col);
+
+            let sign = if col % 2 == 0 {
+                T::default() + num::One::one()
+            } else {
+                T::default() - num::One::one()
+            };
+
+            det += sign * x.mat[0][col] * MatrixUtilities::determinant(&mut sub_matrix)
+                .unwrap_or(T::default());
+        }
+
+        det
+    }
+    fn create_cofactor_expansion_submatrix(x: &mut Matrix<T>, exclude_col: usize) -> Matrix<T> {
+        let (rows, cols) = x.shape();
+        let mut new_matrix = Vec::new();
+
+        for i in 1..rows {
+            let filtered_row: Vec<T> = x.mat[i]
+                .iter()
+                .enumerate()
+                .filter_map(|(j, &val)| 
+                    if j != exclude_col { 
+                        Some(val) 
+                    } else { 
+                        None 
+                    }
+                )
+                .collect();
+
+            new_matrix.push(Arc::from(filtered_row.as_slice()));
+        }
+
+        Matrix {
+            mat: new_matrix,
+            rows: rows - 1,
+            cols: cols - 1,
+        }
     }
 }

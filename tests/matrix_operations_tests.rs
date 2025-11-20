@@ -10,7 +10,7 @@ mod matrix_operations_tests {
         let arr: &[&[i64]] = &[&[1, 2, 3], &[4, 5, 6]];
         let mat = MatrixUtilities::append_multiple(mat, arr);
 
-        let result = MatrixUtilities::add(mat.clone(), mat.clone());
+        let result = MatrixUtilities::add(&mat, &mat);
         assert_eq!(
             result.unwrap().mat,
             vec![Arc::from([2, 4, 6]), Arc::from([8, 10, 12])]
@@ -27,7 +27,7 @@ mod matrix_operations_tests {
         let arr2: &[&[i64]] = &[&[1, 2], &[3, 4]];
         let mat2 = MatrixUtilities::append_multiple(mat2, arr2);
 
-        let result = MatrixUtilities::add(mat, mat2);
+        let result = MatrixUtilities::add(&mat, &mat2);
         assert!(result.is_err());
     }
     #[test]
@@ -36,7 +36,7 @@ mod matrix_operations_tests {
         let arr: &[&[i64]] = &[&[1, 2, 3], &[4, 5, 6]];
         let mat = MatrixUtilities::append_multiple(mat, arr);
 
-        let result = MatrixUtilities::subtract(mat.clone(), mat.clone());
+        let result = MatrixUtilities::subtract(&mat, &mat);
         assert_eq!(
             result.unwrap().mat,
             vec![Arc::from([0, 0, 0]), Arc::from([0, 0, 0])]
@@ -78,7 +78,7 @@ mod matrix_operations_tests {
         let arr2: &[&[i64]] = &[&[5, 2, 8, -1], &[3, 6, 4, 5], &[-2, 9, 7, -3]];
         let mat2 = MatrixUtilities::append_multiple(mat2, arr2);
 
-        let result = MatrixUtilities::multiply(mat, mat2);
+        let result = MatrixUtilities::multiply(&mat, &mat2);
         assert!(result.is_ok());
         assert_eq!(
             result.unwrap().mat,
@@ -95,24 +95,31 @@ mod matrix_operations_tests {
         let arr2: &[&[i64]] = &[&[5, 2], &[3, 6], &[3, 4]];
         let mat2 = MatrixUtilities::append_multiple(mat2, arr2);
 
-        let result = MatrixUtilities::multiply(mat, mat2);
+        let result = MatrixUtilities::multiply(&mat, &mat2);
         assert!(result.is_err());
     }
+
     #[test]
-    fn test_sub_matrix() {
-        let mut mat = Matrix::default();
-        let arr: &[&[i64]] = &[&[1, 2, 3], &[4, 5, 6], &[7, 8, 9]];
+    fn test_transpose() {
+        let mat = Matrix {
+            mat: vec![Arc::from([1, 2, 3]), Arc::from([4, 5, 6])],
+            rows: 2,
+            cols: 3,
+        };
 
-        mat = MatrixUtilities::append_multiple(mat, arr);
+        let transposed = MatrixUtilities::transpose(&mat);
 
-        let mat = mat.sub_matrix(0..2, 0..2);
-        assert!(mat.is_ok());
+        let expected = Matrix {
+            mat: vec![Arc::from([1, 4]), Arc::from([2, 5]), Arc::from([3, 6])],
+            rows: 3,
+            cols: 2,
+        };
 
-        let sub_mat = mat.unwrap();
-        let expected: Vec<Arc<[i64]>> =
-            vec![Arc::from(&[1, 2][..]), Arc::from(&[4, 5][..])];
-        assert_eq!(sub_mat.mat, expected);
+        assert_eq!(transposed.mat, expected.mat);
+        assert_eq!(transposed.rows, expected.rows);
+        assert_eq!(transposed.cols, expected.cols);
     }
+
     #[test]
     fn test_dot_product() {
         let mat = Matrix::default();
@@ -123,10 +130,11 @@ mod matrix_operations_tests {
         let arr2: &[&[i64]] = &[&[1], &[2], &[3]];
         let mat2 = MatrixUtilities::append_multiple(mat2, arr2);
 
-        let result = MatrixUtilities::dot(mat, mat2);
+        let result = MatrixUtilities::dot(&mat, &mat2);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), 14);
     }
+
     #[test]
     fn test_dot_product_error() {
         let mat = Matrix::default();
@@ -137,9 +145,10 @@ mod matrix_operations_tests {
         let arr2: &[&[i64]] = &[&[1], &[2], &[3]];
         let mat2 = MatrixUtilities::append_multiple(mat2, arr2);
 
-        let result = MatrixUtilities::dot(mat, mat2);
+        let result = MatrixUtilities::dot(&mat, &mat2);
         assert!(result.is_err());
     }
+
     #[test]
     fn test_gauss_jordan_elimination_unique_solution() {
         let matrix = Matrix {
@@ -171,7 +180,7 @@ mod matrix_operations_tests {
             cols: 2,
         };
 
-        let (l, u) = MatrixUtilities::lu_decomposition(matrix).unwrap();
+        let (l, u) = MatrixUtilities::lu_decomposition(&matrix).unwrap();
 
         let expected_l = Matrix {
             mat: vec![
@@ -199,7 +208,7 @@ mod matrix_operations_tests {
     fn test_lu_decomposition_non_square_matrix() {
         let matrix: Matrix<i32> = matrix!([2, 3, 1], [4, 7, 3]);
 
-        let result = MatrixUtilities::lu_decomposition(matrix);
+        let result = MatrixUtilities::lu_decomposition(&matrix);
         assert!(result.is_err(), "LU decomposition should fail for a non-square matrix.");
         assert_eq!(
             result.unwrap_err(),

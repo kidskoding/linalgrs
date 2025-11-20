@@ -1,6 +1,8 @@
 mod determinant_tests {
     use linalgrs::matrix::Matrix;
+    use linalgrs::matrix_utilities::MatrixUtilities;
     use std::sync::Arc;
+
     #[test]
     fn test_determinant_1x1() {
         let mut matrix = Matrix {
@@ -8,8 +10,10 @@ mod determinant_tests {
             rows: 1,
             cols: 1,
         };
-        assert_eq!(matrix.determinant().unwrap(), 1);
+
+        assert_eq!(MatrixUtilities::determinant(&mut matrix).unwrap(), 1);
     }
+
     #[test]
     fn test_determinant_2x2() {
         let mut matrix = Matrix {
@@ -17,8 +21,10 @@ mod determinant_tests {
             rows: 2,
             cols: 2,
         };
-        assert_eq!(matrix.determinant().unwrap(), -2);
+
+        assert_eq!(MatrixUtilities::determinant(&mut matrix).unwrap(), -2);
     }
+
     #[test]
     fn test_determinant_3x3() {
         let mut matrix = Matrix {
@@ -31,9 +37,10 @@ mod determinant_tests {
             cols: 3,
         };
 
-        let result = matrix.determinant();
+        let result = MatrixUtilities::determinant(&mut matrix);
         assert_eq!(result.unwrap(), 1);
     }
+
     #[test]
     fn test_determinant_4x4() {
         let mut matrix = Matrix {
@@ -46,8 +53,9 @@ mod determinant_tests {
             rows: 4,
             cols: 4,
         };
-        assert_eq!(matrix.determinant().unwrap(), 30);
+        assert_eq!(MatrixUtilities::determinant(&mut matrix).unwrap(), 30);
     }
+
     #[test]
     fn test_non_square_matrix() {
         let mut matrix = Matrix {
@@ -56,7 +64,7 @@ mod determinant_tests {
             cols: 3,
         };
 
-        let result = matrix.determinant();
+        let result = MatrixUtilities::determinant(&mut matrix);
         assert_eq!(result, None);
     }
 }
