@@ -13,4 +13,4 @@
   - [x] 1.8 - Compute row echelon form and rref for a matrix
   - [x] 1.9 - Solve for pivots in a matrix using gaussian elimination
   - [x] 1.10 - Calculate the transpose of a matrix
-  - [ ] 1.11 - Calculate the inverse of a matrix
+  - [x] 1.11 - Calculate the inverse of a matrix
