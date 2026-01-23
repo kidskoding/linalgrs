@@ -177,11 +177,11 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
             let mut sum = T::default();
 
             for j in (i + 1)..num_cols - 1 {
-                sum = sum + matrix.mat[i][j] * solutions[j];
+                sum += matrix.mat[i][j] * solutions[j];
             }
 
             solutions[i] = matrix.mat[i][num_cols - 1] - sum;
-            solutions[i] = solutions[i] / matrix.mat[i][i];
+            solutions[i] /= matrix.mat[i][i];
 
             pivot_vars.insert(('a' as u8 + i as u8) as char, solutions[i]);
         }

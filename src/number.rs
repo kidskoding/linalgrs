@@ -19,8 +19,7 @@ pub trait Number:
     + Display
     + PartialEq
     + num::One
-{
-}
+{}
 
 impl Number for i8 {}
 impl Number for i16 {}

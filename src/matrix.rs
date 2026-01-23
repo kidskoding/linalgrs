@@ -1,6 +1,7 @@
 use color_eyre::eyre::eyre;
 
 use crate::number::Number;
+use crate::vector::Vector;
 use std::fmt::Display;
 use std::ops::Range;
 use std::sync::Arc;
@@ -31,35 +32,6 @@ impl<T: PartialEq + Number + num::One> PartialEq for Matrix<T> {
     fn eq(&self, other: &Self) -> bool {
         self.rows == other.rows && self.cols == other.cols && self.mat == other.mat
     }
-}
-
-/// A macro to create a `Matrix` from a 2D array.
-///
-/// This macro allows you to create a `Matrix` instance by specifying its elements
-/// in a 2D array format. Each inner array represents a row in the matrix.
-///
-/// ### Parameters
-/// - `[$([$elem:expr),* $(,)?]),* $(,)?`: A 2D array where each inner array represents a row.
-///
-/// ### Returns
-/// - A `Matrix` instance containing the specified elements.
-#[macro_export]
-macro_rules! matrix {
-    ($([$($elem:expr),* $(,)?]),* $(,)?) => {
-        {
-            let mut rows = Vec::new();
-            $(
-                let row = vec![$($elem),*];
-                rows.push(Arc::from(row.as_slice()));
-            )*
-
-            Matrix {
-                mat: rows.clone(),
-                rows: rows.len(),
-                cols: if rows.len() > 0 { rows[0].len() } else { 0 },
-            }
-        }
-    };
 }
 
 impl<T: Number + num::One> Default for Matrix<T> {
@@ -151,4 +123,75 @@ impl<T: Number + num::One> Matrix<T> {
             cols: col_range.len(),
         })
     }
+
+    /// Converts this `Matrix` into a single column `Vector` by flattening its rows.
+    ///
+    /// This operation treats the matrix as a single column of data. It allocates 
+    /// a new contiguous array to hold all elements from every row.
+    ///
+    /// ### Returns
+    /// - A `Result` containing the new `Vector` instance.
+    pub fn into_column_vector(&mut self) -> color_eyre::Result<Vector<T>> {
+        if self.cols != 1 {
+            return Err(eyre!("Matrix must have one column to convert into a column vector!"))
+        }
+
+        let mut flattened_data = Vec::with_capacity(self.rows * self.cols);
+
+        for row in &self.mat {
+            flattened_data.extend_from_slice(row);
+        }
+
+        Ok(Vector::new(flattened_data))
+    }
+
+    /// Converts this `Matrix` into a single row `Vector` by flattening its rows.
+    ///
+    /// This operation treats the matrix as a single row of data. It allocates 
+    /// a new contiguous array to hold all elements from every row.
+    ///
+    /// ### Returns
+    /// - A `Result` containing the new `Vector` instance.
+    pub fn into_row_vector(&mut self) -> color_eyre::Result<Vector<T>> {
+        if self.rows != 1 {
+            return Err(eyre!("Matrix must have one row to convert into a row vector!"))
+        }
+
+        let mut flattened_data = Vec::with_capacity(self.rows * self.cols);
+
+        for row in &self.mat {
+            flattened_data.extend_from_slice(row);
+        }
+
+        Ok(Vector::new(flattened_data))
+    }
+}
+
+/// A macro to create a `Matrix` from a 2D array.
+///
+/// This macro allows you to create a `Matrix` instance by specifying its elements
+/// in a 2D array format. Each inner array represents a row in the matrix.
+///
+/// ### Parameters
+/// - `[$([$elem:expr),* $(,)?]),* $(,)?`: A 2D array where each inner array represents a row.
+///
+/// ### Returns
+/// - A `Matrix` instance containing the specified elements.
+#[macro_export]
+macro_rules! matrix {
+    ($([$($elem:expr),* $(,)?]),* $(,)?) => {
+        {
+            let mut rows = Vec::new();
+            $(
+                let row = vec![$($elem),*];
+                rows.push(Arc::from(row.as_slice()));
+            )*
+
+            Matrix {
+                mat: rows.clone(),
+                rows: rows.len(),
+                cols: if rows.len() > 0 { rows[0].len() } else { 0 },
+            }
+        }
+    };
 }
