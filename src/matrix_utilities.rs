@@ -1,5 +1,7 @@
 extern crate num;
 
+use color_eyre::eyre::eyre;
+
 use crate::matrix::Matrix;
 use crate::number::Number;
 use std::collections::HashMap;
@@ -163,7 +165,7 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///       using Gaussian Elimination (i.e. no solution or infinitely many solutions)
     ///     - An `Ok` enclosed with a `HashMap` containing each variable name
     ///       mapped to a value with its solution
-    pub fn gaussian_elimination(mut matrix: Matrix<T>) -> Result<HashMap<char, T>, String> {
+    pub fn gaussian_elimination(mut matrix: Matrix<T>) -> color_eyre::Result<HashMap<char, T>> {
         matrix = MatrixUtilities::row_echelon_form(matrix);
         let mut pivot_vars = HashMap::new();
         let num_rows = matrix.rows;
@@ -185,17 +187,15 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
         }
 
         for i in 0..num_rows {
-            if matrix.mat[i].iter().all(|&x| x == T::default())
-                && matrix.mat[i][num_cols - 1] == T::default()
-            {
-                return Err("Infinitely many solutions exist for the given matrix.".to_string());
+            if matrix.mat[i].iter().all(|&x| x == T::default()) && matrix.mat[i][num_cols - 1] == T::default() {
+                return Err(eyre!("Infinitely many solutions exist for the given matrix."));
             }
         }
 
         for i in 0..num_rows {
             let pivot = matrix.mat[i][i];
             if pivot == T::default() && matrix.mat[i][num_cols - 1] != T::default() {
-                return Err("No solution exists for the given matrix.".to_string());
+                return Err(eyre!("No solution exists for the given matrix."));
             }
         }
 
@@ -214,11 +214,10 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///     - An `Err` if the two matrices are different shapes
     ///     - An `Ok` wrapped inside a `Matrix` instance that represents the sum
     ///       of the two matrices `a` and `b`
-    pub fn add(a: &Matrix<T>, b: &Matrix<T>) -> Result<Matrix<T>, String> {
+    pub fn add(a: &Matrix<T>, b: &Matrix<T>) -> color_eyre::Result<Matrix<T>> {
         if (a.rows, a.cols) != (b.rows, b.cols) {
-            return Err("Cannot add the two matrices because
-                their shapes are unequal!"
-                .to_string());
+            return Err(eyre!("Cannot add the two matrices because
+                their shapes are unequal!"));
         }
 
         let mut result = Vec::new();
@@ -250,11 +249,10 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///   - An `Err` value when the two matrices have different shapes
     ///   - An `Ok` value wrapped with a `Matrix` instance that represents the difference
     ///     of the two matrices `a` and `b`
-    pub fn subtract(a: &Matrix<T>, b: &Matrix<T>) -> Result<Matrix<T>, String> {
+    pub fn subtract(a: &Matrix<T>, b: &Matrix<T>) -> color_eyre::Result<Matrix<T>> {
         if (a.rows, a.cols) != (b.rows, b.cols) {
-            return Err("Cannot add the two matrices because
-                their shapes are unequal!"
-                .to_string());
+            return Err(eyre!("Cannot add the two matrices because
+                their shapes are unequal!"));
         }
 
         let mut result = Vec::new();
@@ -305,11 +303,10 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///     - An `Err` if the columns of `Matrix` a does not equal the rows of `Matrix` b
     ///     - An `Ok` wrapped inside a `Matrix` object that represents the product between two
     ///       matrices
-    pub fn multiply(a: &Matrix<T>, b: &Matrix<T>) -> Result<Matrix<T>, String> {
+    pub fn multiply(a: &Matrix<T>, b: &Matrix<T>) -> color_eyre::Result<Matrix<T>> {
         if a.cols != b.rows {
-            return Err("The columns of matrix a do not
-                equal the rows of matrix b!"
-                .to_string());
+            return Err(eyre!("The columns of matrix a do not
+                equal the rows of matrix b!"));
         }
 
         let mut new_mat = vec![];
@@ -345,16 +342,14 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///       rows of `Matrix` b`
     ///     - An `Ok` wrapped in a T generic value, representing the
     ///       dot product
-    pub fn dot(a: &Matrix<T>, b: &Matrix<T>) -> Result<T, String> {
+    pub fn dot(a: &Matrix<T>, b: &Matrix<T>) -> color_eyre::Result<T> {
         if a.cols != b.rows {
-            return Err("Cannot get the dot product: The number of columns in A \
-                must match the number of rows in B."
-                .to_string());
+            return Err(eyre!("Cannot get the dot product: The number of columns in A \
+                must match the number of rows in B."));
         }
         if !(a.rows == 1 && b.cols == 1) {
-            return Err("Dot product is only valid for a
-                row vector and a column vector."
-                .to_string());
+            return Err(eyre!("Dot product is only valid for a
+                row vector and a column vector."));
         }
 
         let mut sum = T::default();
@@ -378,7 +373,7 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///       using Gaussian Elimination (i.e. no solution or infinitely many solutions)
     ///     - An `Ok` enclosed with a `HashMap` containing each variable name
     ///       mapped to a value with its solution
-    pub fn gauss_jordan_elimination(mut matrix: Matrix<T>) -> Result<HashMap<char, T>, String> {
+    pub fn gauss_jordan_elimination(mut matrix: Matrix<T>) -> color_eyre::Result<HashMap<char, T>> {
         matrix = MatrixUtilities::rref(matrix);
         let mut pivot_vars = HashMap::new();
 
@@ -391,13 +386,13 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
                     matrix.mat[i][matrix.cols - 1],
                 );
             } else if matrix.mat[i][matrix.cols - 1] != T::default() {
-                return Err("No solution exists for the given matrix.".to_string());
+                return Err(eyre!("No solution exists for the given matrix."));
             }
         }
 
         for i in 0..matrix.rows {
             if matrix.mat[i].iter().all(|&x| x == T::default()) {
-                return Err("Infinitely many solutions exist for the given matrix.".to_string());
+                return Err(eyre!("Infinitely many solutions exist for the given matrix."));
             }
         }
 
@@ -467,12 +462,12 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     /// - A `Result` type based on whether the given `matrix` is invertible
     ///     - An `Err` consisting of a `String` if the given `matrix` is not invertible
     ///     - An `Ok` consisting of the inverse matrix, if the given `matrix` is invertible
-    pub fn inverse(matrix: Matrix<T>) -> Result<Matrix<T>, String> {
+    pub fn inverse(matrix: Matrix<T>) -> color_eyre::Result<Matrix<T>> {
         let rows = matrix.rows;
         let cols = matrix.cols;
 
         if rows != cols {
-            return Err("Matrix must be square to find its inverse.".to_string());
+            return Err(eyre!("Matrix must be square to find its inverse."));
         }
 
         let n = rows;
@@ -492,7 +487,7 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
 
         for i in 0..n {
             if augmented_matrix.mat[i][i] == T::default() {
-                return Err("Matrix is singular and cannot be inverted".to_string());
+                return Err(eyre!("Matrix is singular and cannot be inverted"));
             }
 
             let pivot = augmented_matrix.mat[i][i];
@@ -541,10 +536,10 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///     - Returns an Ok form containing a `Matrix` tuple containing the
     ///       `l` and `u` decomposed matrices respectively
     ///     - Returns an error if the `matrix` is not invertible
-    pub fn lu_decomposition(matrix: &Matrix<T>) -> Result<(Matrix<T>, Matrix<T>), String> {
+    pub fn lu_decomposition(matrix: &Matrix<T>) -> color_eyre::Result<(Matrix<T>, Matrix<T>)> {
         let n = matrix.rows;
         if n != matrix.cols {
-            return Err("Matrix must be square for LU decomposition.".to_string());
+            return Err(eyre!("Matrix must be square for LU decomposition."));
         }
 
         let mut l = Matrix {

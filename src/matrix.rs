@@ -1,4 +1,4 @@
-extern crate num;
+use color_eyre::eyre::eyre;
 
 use crate::number::Number;
 use std::fmt::Display;
@@ -134,9 +134,9 @@ impl<T: Number + num::One> Matrix<T> {
         &mut self,
         row_range: Range<usize>,
         col_range: Range<usize>,
-    ) -> Result<Matrix<T>, String> {
+    ) -> color_eyre::Result<Matrix<T>> {
         if row_range.end > self.rows || col_range.end > self.cols {
-            return Err("Range out of bounds!".to_string());
+            return Err(eyre!("Range out of bounds!".to_string()));
         }
 
         let mut new_mat = Vec::new();
