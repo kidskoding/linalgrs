@@ -1,5 +1,3 @@
-extern crate num;
-
 use color_eyre::eyre::eyre;
 
 use crate::matrix::Matrix;
@@ -66,7 +64,7 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///
     /// ### Returns
     /// - A `Matrix` instance containing the given `matrix` in row echelon form
-    pub fn row_echelon_form(mut matrix: Matrix<T>) -> Matrix<T> {
+    pub fn row_echelon_form(matrix: &mut Matrix<T>) -> Matrix<T> {
         let rows = matrix.rows;
         let cols = matrix.cols;
 
@@ -98,7 +96,7 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
             }
         }
 
-        matrix
+        matrix.clone()
     }
 
     /// Computes the reduced row echelon form (RREF) for the given `matrix` and returns the result
@@ -109,7 +107,7 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///
     /// ### Returns
     /// - A `Matrix` instance containing the given `matrix` in reduced row echelon form
-    pub fn rref(mut matrix: Matrix<T>) -> Matrix<T> {
+    pub fn rref(matrix: &mut Matrix<T>) -> Matrix<T> {
         let rows = matrix.rows;
         let cols = matrix.cols;
 
@@ -118,7 +116,7 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
             if pivot != T::default() {
                 for c in 0..cols {
                     let row = Arc::make_mut(&mut matrix.mat[i]);
-                    row[c] = row[c] / pivot;
+                    row[c] /= pivot;
                 }
             }
 
@@ -149,7 +147,7 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
             }
         }
 
-        matrix
+        matrix.to_owned()
     }
 
     /// Performs the [Gaussian Elimination](https://en.wikipedia.org/wiki/Gaussian_elimination)
@@ -161,13 +159,14 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///
     /// ### Returns
     /// - A `Result` based on whether the matrix had a solution
-    ///     - An `Err` with an enclosed `String` representing the error state of solving the `matrix`
+    ///     - An `Err` representing the error state of solving the `matrix`
     ///       using Gaussian Elimination (i.e. no solution or infinitely many solutions)
     ///     - An `Ok` enclosed with a `HashMap` containing each variable name
     ///       mapped to a value with its solution
-    pub fn gaussian_elimination(mut matrix: Matrix<T>) -> color_eyre::Result<HashMap<char, T>> {
-        matrix = MatrixUtilities::row_echelon_form(matrix);
+    pub fn gaussian_elimination(matrix: &mut Matrix<T>) -> color_eyre::Result<HashMap<char, T>> {
+        let matrix = MatrixUtilities::row_echelon_form(matrix);
         let mut pivot_vars = HashMap::new();
+        
         let num_rows = matrix.rows;
         let num_cols = matrix.cols;
 
@@ -200,6 +199,28 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
         }
 
         Ok(pivot_vars)
+    }
+    
+    /// Computes the rank of the given `matrix`.
+    ///
+    /// The rank is defined as the number of linearly independent rows in the matrix.
+    /// This is calculated by transforming the matrix into Reduced Row Echelon Form (RREF)
+    /// and counting the number of non-zero rows.
+    ///
+    /// ### Parameters
+    /// - `mat`: A reference to the `Matrix` whose rank is to be calculated.
+    ///
+    /// ### Returns
+    /// - The rank of the matrix as a `usize`.
+    pub fn rank(mat: &mut Matrix<T>) -> usize {
+        let rref_mat = Self::rref(mat);
+        if mat.rows == 0 || mat.cols == 0 {
+            return 0;
+        }
+          
+        rref_mat.mat.iter()
+            .filter(|row| row.iter().any(|&val| val != T::default()))
+            .count()
     }
 
     /// Adds two `Matrix` instances together and returns a new `Matrix` representing
@@ -369,12 +390,12 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///
     /// ### Returns
     /// - A `Result` based on whether the matrix had a solution
-    ///     - An `Err` with an enclosed `String` representing the error state of solving the `matrix`
+    ///     - An `Err` representing the error state of solving the `matrix`
     ///       using Gaussian Elimination (i.e. no solution or infinitely many solutions)
     ///     - An `Ok` enclosed with a `HashMap` containing each variable name
     ///       mapped to a value with its solution
-    pub fn gauss_jordan_elimination(mut matrix: Matrix<T>) -> color_eyre::Result<HashMap<char, T>> {
-        matrix = MatrixUtilities::rref(matrix);
+    pub fn gauss_jordan_elimination(matrix: &mut Matrix<T>) -> color_eyre::Result<HashMap<char, T>> {
+        let matrix = MatrixUtilities::rref(matrix);
         let mut pivot_vars = HashMap::new();
 
         for i in 0..matrix.rows {
@@ -533,9 +554,9 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     ///
     /// ### Returns
     /// - A `Result` type based on whether or not the `matrix` is invertible
-    ///     - Returns an Ok form containing a `Matrix` tuple containing the
+    ///     - Returns an `Ok` form containing a `Matrix` tuple containing the
     ///       `l` and `u` decomposed matrices respectively
-    ///     - Returns an error if the `matrix` is not invertible
+    ///     - Returns an `Err` containing an error if the `matrix` is not invertible
     pub fn lu_decomposition(matrix: &Matrix<T>) -> color_eyre::Result<(Matrix<T>, Matrix<T>)> {
         let n = matrix.rows;
         if n != matrix.cols {

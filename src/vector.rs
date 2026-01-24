@@ -53,7 +53,7 @@ impl <T: Number + PartialEq> Vector<T> {
 /// - A `Vector` instance containing the specified elements.
 #[macro_export]
 macro_rules! vector {
-    ($(elem:expr),* $(,)?) => {
+    [$(elem:expr),* $(,)?] => {
         let mut temp_vec = Vec::new();
         $(
             temp_vec.push($elem)
