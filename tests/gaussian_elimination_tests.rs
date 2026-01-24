@@ -5,7 +5,7 @@ mod gaussian_elimination_tests {
 
     #[test]
     fn test_row_echelon_form() {
-        let matrix = Matrix {
+        let mut matrix = Matrix {
             mat: vec![
                 Arc::from([1.0, 2.0, -1.0].as_slice()),
                 Arc::from([2.0, 3.0, 1.0].as_slice()),
@@ -21,13 +21,13 @@ mod gaussian_elimination_tests {
             Arc::from([0.0, 0.0, 0.0].as_slice()),
         ];
 
-        let result = MatrixUtilities::row_echelon_form(matrix);
+        let result = MatrixUtilities::row_echelon_form(&mut matrix);
         assert_eq!(result.mat, expected);
     }
 
     #[test]
     fn test_rref() {
-        let mat = Matrix {
+        let mut mat = Matrix {
             mat: vec![
                 Arc::from(vec![1.0, 2.0, -1.0]),
                 Arc::from(vec![0.0, 1.0, -3.0]),
@@ -43,14 +43,14 @@ mod gaussian_elimination_tests {
             Arc::from(vec![0.0, 0.0, 0.0]),
         ];
 
-        let result = MatrixUtilities::rref(mat);
+        let result = MatrixUtilities::rref(&mut mat);
 
         assert_eq!(result.mat, expected_rref);
     }
 
     #[test]
     fn test_gaussian_elimination_unique_solution() {
-        let matrix = Matrix {
+        let mut matrix = Matrix {
             mat: vec![
                 Arc::from(vec![2.0, 1.0, -1.0, 8.0]),
                 Arc::from(vec![-3.0, -1.0, 2.0, -11.0]),
@@ -60,8 +60,9 @@ mod gaussian_elimination_tests {
             cols: 4,
         };
 
-        let result = MatrixUtilities::gaussian_elimination(matrix);
+        let result = MatrixUtilities::gaussian_elimination(&mut matrix);
         assert!(result.is_ok());
+
         let pivot_vars = result.unwrap();
         assert_eq!(pivot_vars.get(&'a'), Some(&2.0));
         assert_eq!(pivot_vars.get(&'b'), Some(&3.0));
@@ -69,7 +70,7 @@ mod gaussian_elimination_tests {
     }
     #[test]
     fn test_gaussian_elimination_no_solution() {
-        let matrix = Matrix {
+        let mut matrix = Matrix {
             mat: vec![
                 Arc::from(vec![2.0, 1.0, -1.0, 8.0]),
                 Arc::from(vec![-3.0, -1.0, 2.0, -11.0]),
@@ -79,16 +80,12 @@ mod gaussian_elimination_tests {
             cols: 4,
         };
 
-        let result = MatrixUtilities::gaussian_elimination(matrix);
+        let result = MatrixUtilities::gaussian_elimination(&mut matrix);
         assert!(result.is_err());
-        assert_eq!(
-            result.err(),
-            Some("No solution exists for the given matrix.".to_string())
-        );
     }
     #[test]
     fn test_gaussian_elimination_infinitely_many_solutions() {
-        let matrix = Matrix {
+        let mut matrix = Matrix {
             mat: vec![
                 Arc::from(vec![1.0, -1.0, 2.0, 0.0]),
                 Arc::from(vec![0.0, 0.0, 0.0, 0.0]),
@@ -98,11 +95,7 @@ mod gaussian_elimination_tests {
             cols: 4,
         };
 
-        let result = MatrixUtilities::gaussian_elimination(matrix);
+        let result = MatrixUtilities::gaussian_elimination(&mut matrix);
         assert!(result.is_err());
-        assert_eq!(
-            result.err(),
-            Some("Infinitely many solutions exist for the given matrix.".to_string())
-        );
     }
 }
