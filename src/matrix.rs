@@ -142,7 +142,7 @@ impl<T: Number + num::One> Matrix<T> {
             flattened_data.extend_from_slice(row);
         }
 
-        Ok(Vector::new(flattened_data))
+        Ok(Vector::new(&flattened_data))
     }
 
     /// Converts this `Matrix` into a single row `Vector` by flattening its rows.
@@ -163,7 +163,7 @@ impl<T: Number + num::One> Matrix<T> {
             flattened_data.extend_from_slice(row);
         }
 
-        Ok(Vector::new(flattened_data))
+        Ok(Vector::new(&flattened_data))
     }
 }
 

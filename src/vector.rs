@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{fmt::Display, sync::Arc};
 
 use crate::number::Number;
 
@@ -31,13 +31,43 @@ impl <T: Number + PartialEq> Vector<T> {
     ///
     /// ### Returns
     /// - A new `Vector` instance containing the provided elements.
-    pub fn new(elements: Vec<T>) -> Self {
+    pub fn new(elements: &[T]) -> Self {
         let len = elements.len();
         
         Self {
-            data: Arc::from(elements.into_boxed_slice()),
+            data: Arc::from(elements),
             len
         }
+    }
+}
+
+impl <T: Number + num::One> PartialEq for Vector<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.len == other.len && self.data == other.data
+    } 
+}
+
+impl <T: Number + num::One> Default for Vector<T> {
+    fn default() -> Self {
+        Vector {
+            data: Arc::new([]), 
+            len: 0
+        } 
+    }
+} 
+
+impl<T: Number + Display> Display for Vector<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut curr_line = String::new();
+        curr_line.push('|');
+
+        for num in self.data.iter() {
+            curr_line.push(' ');
+            curr_line.push_str(&format!("{}", num));
+        }
+
+        curr_line.push_str(" |");
+        write!(f, "{}", curr_line)
     }
 }
 
@@ -53,12 +83,7 @@ impl <T: Number + PartialEq> Vector<T> {
 /// - A `Vector` instance containing the specified elements.
 #[macro_export]
 macro_rules! vector {
-    [$(elem:expr),* $(,)?] => {
-        let mut temp_vec = Vec::new();
-        $(
-            temp_vec.push($elem)
-        )*
-
-        Vector::new(temp_vec)
+    [$($elem:expr),* $(,)?] => {
+        $crate::vector::Vector::new(&[$($elem),*])
     };
 }
