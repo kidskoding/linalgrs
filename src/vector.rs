@@ -49,7 +49,7 @@ impl<T: Number + PartialEq + Hash> Hash for Vector<T> {
     }
 }
 
-impl <T: Number + PartialEq> Eq for Vector<T> {}
+impl<T: Number + PartialEq> Eq for Vector<T> {}
 
 impl <T: Number + num::One> PartialEq for Vector<T> {
     fn eq(&self, other: &Self) -> bool {

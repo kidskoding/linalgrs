@@ -1,5 +1,7 @@
 use std::{collections::HashSet, marker::PhantomData, ops::Neg, sync::Arc};
 
+use color_eyre::eyre::eyre;
+
 use crate::{matrix::Matrix, matrix_utilities::MatrixUtilities, number::Number, vector::Vector};
 
 pub struct VectorUtilities<T> {
@@ -28,7 +30,23 @@ impl<T: Number + Neg<Output = T>> VectorUtilities<T> {
     /// ### Returns
     /// - `true` - If the set of vectors are linearly independent
     /// - `false` - If the set of vectors are not linearly independent
-    pub fn is_linear_independent(vectors: &HashSet<Vector<T>>) -> bool {
+    pub fn is_linear_independent(vectors: &HashSet<Vector<T>>) -> color_eyre::Result<bool> {
+        if vectors.is_empty() {
+            return Ok(true)
+        }
+
+        let mut iter = vectors.iter();
+        let first_vector = iter.next()
+            .unwrap();
+
+        for v in iter {
+            if v.len != first_vector.len {
+                return Err(
+                    eyre!("Vectors have different dimensions; They belong to different vector spaces! Linear independence is undefined!")
+                );
+            }
+        }
+
         let n = vectors.len();
 
         let mut matrix_rows = Vec::new();
@@ -46,6 +64,19 @@ impl<T: Number + Neg<Output = T>> VectorUtilities<T> {
         };
 
         let rank = MatrixUtilities::rank(&mut mat);
-        rank == n
-    } 
+        Ok(rank == n)
+    }
+
+    pub fn inner_product(u: &Vector<T>, v: &Vector<T>) -> color_eyre::Result<T> {
+         if u.len != v.len {
+             return Err(eyre!("Vectors have different dimensions; They belong to different vector spaces! The inner product is undefined!"));
+         }
+
+         let mut sum = T::default();
+         for i in 0..u.len {
+             sum += u.data[i] * v.data[i];
+         }
+
+         Ok(sum)
+    }
 } 
