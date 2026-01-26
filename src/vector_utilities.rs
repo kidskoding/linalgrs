@@ -28,7 +28,10 @@ impl<T: Number + Neg<Output = T>> VectorUtilities<T> {
     /// order to determine linear indepedence
     ///
     /// ### Returns
-    /// - `true` - If the set of vectors are linearly independent
+    /// - An `Ok` result, returning `true` if the set of vectors are linearly
+    /// independent and `false` if the set of vectors are not linearly independent (linearly
+    /// dependent)
+    /// - An `Err` result, stating that the vectors belong to varying vector spaces! (typically different dimension!) true` - If the set of vectors are linearly independent
     /// - `false` - If the set of vectors are not linearly independent
     pub fn is_linear_independent(vectors: &HashSet<Vector<T>>) -> color_eyre::Result<bool> {
         if vectors.is_empty() {
@@ -67,6 +70,31 @@ impl<T: Number + Neg<Output = T>> VectorUtilities<T> {
         Ok(rank == n)
     }
 
+    /// Computes the inner product for two vectors, `u` and `v` 
+    ///
+    /// The inner product is a method used to multiply two vectors that exist 
+    /// within the same vector space, resulting in a scalar value 
+    /// that defines the alignment and magnitude 
+    /// amongst the two vectors (supposedly `u` and `v`) in vector space 
+    ///
+    /// This value can either be > 0 (the vectors overlap), < 0 (vectors point 
+    /// in opposite directions), or 0 (perpendicular)
+    ///
+    /// Mathematically speaking, the inner product (denoted as <u, v>) of two vectors `u` and `v`,
+    /// where $u = (u_1, u_2, \dots, u_n)$ and $v = (v_1, v_2, \dots, v_n)$ is 
+    /// defined as 
+    /// 
+    /// $$
+    ///     <u, v> = u_1v_1 + u_2v_2 + \dots + u_nv_n
+    /// $$
+    ///
+    /// ### Parameters
+    /// - `u`: A reference to a `Vector` that acts as the first input to calculate the inner product 
+    /// - `v`: A reference to a `Vector` that acts as the second input to calculate the inner product
+    ///
+    /// ### Returns
+    /// - An `Ok` variant of a Result, returning a type `T` bounded by trait `Number` representing the scalar value of the inner product between vectors `u` and `v`
+    /// - An `Err` variant of a Result if vectors `u` and `v` do not belong to the same dimension
     pub fn inner_product(u: &Vector<T>, v: &Vector<T>) -> color_eyre::Result<T> {
          if u.len != v.len {
              return Err(eyre!("Vectors have different dimensions; They belong to different vector spaces! The inner product is undefined!"));
