@@ -514,7 +514,7 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
             let pivot = augmented_matrix.mat[i][i];
             let row = Arc::make_mut(&mut augmented_matrix.mat[i]);
             for j in 0..augmented_matrix.cols {
-                row[j] = row[j] / pivot;
+                row[j] /= pivot;
             }
 
             for k in 0..n {
@@ -625,7 +625,7 @@ impl<T: Number + Neg<Output = T>> MatrixUtilities<T> {
     /// - `x` - The given matrix to compute the determinant for
     /// 
     /// ### Returns
-    /// - The determinant value of `x` wrapped in an (optional)`Option` 
+    /// - The determinant value of `x` wrapped in an (optional) `Option` 
     ///     - A `None` if the `Matrix`'s determinant could not be calculated 
     ///       (unequal rows and columns)
     ///     - A `Some` with the determinant value, if this `Matrix`'s

@@ -59,4 +59,15 @@ mod vector_operations_tests {
 
         assert_eq!(result.is_err(), true);
     }
+
+    #[test]
+    fn test_orthogonality() {
+        let u = vector![1, 0];
+        let v = vector![0, 1];
+
+        let result = VectorUtilities::<i32>::is_orthogonal(&u, &v);
+
+        assert_eq!(result.is_ok(), true);
+        assert_eq!(result.unwrap(), true);
+    }
 }

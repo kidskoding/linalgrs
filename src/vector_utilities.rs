@@ -107,4 +107,19 @@ impl<T: Number + Neg<Output = T>> VectorUtilities<T> {
 
          Ok(sum)
     }
+    
+    /// Checks if two vectors are orthogonal 
+    ///
+    /// Two vectors are orthogonal if and only if their inner product is 0
+    ///
+    /// ### Parameters
+    /// - `u`: A reference to a `Vector` that acts as the first input to check for orthogonality across two vectors 
+    /// - `v`: A reference to a `Vector` that acts as the second input to check for orthogonality across two vectors
+    ///
+    /// ### Returns
+    /// - An `Ok` variant of a Result, returning `true` if the inner product of vectors `u` and `v` are equal to 0 and `false` otherwise
+    /// - An `Err` variant of a Result if vectors `u` and `v` do not belong to the same dimension
+    pub fn is_orthogonal(u: &Vector<T>, v: &Vector<T>) -> color_eyre::Result<bool> {
+        Ok(Self::inner_product(u, v)? == T::default())
+    }
 } 
