@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+use std::hash::{Hash, Hasher};
 use std::{fmt::Display, sync::Arc};
 
 use crate::number::Number;
@@ -40,6 +42,14 @@ impl <T: Number + PartialEq> Vector<T> {
         }
     }
 }
+
+impl<T: Number + PartialEq + Hash> Hash for Vector<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.data.hash(state);
+    }
+}
+
+impl <T: Number + PartialEq> Eq for Vector<T> {}
 
 impl <T: Number + num::One> PartialEq for Vector<T> {
     fn eq(&self, other: &Self) -> bool {

@@ -17,4 +17,10 @@ mod vector_operations_test {
         let vec = vector![1, 2, 3];
         assert_eq!(format!("{}", vec), "| 1 2 3 |");
     }
+
+    #[test]
+    fn test_debug_derive() {
+        let vec = vector![1, 2, 3];
+        dbg!(vec);
+    }
 }
